@@ -3,24 +3,38 @@ import {
   View,
   StyleSheet,
   FlatList,
-  RefreshControl,
   Dimensions,
+  RefreshControl,
   useWindowDimensions,
 } from 'react-native';
-import { Text, Card, ActivityIndicator, FAB } from 'react-native-paper';
+import { Text, Card, ActivityIndicator, FAB, Searchbar, Chip, useTheme } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { dummyPins } from '../data/dummyData';
 
 const MIN_COLUMN_WIDTH = 150; // Minimum width for each column
 const GRID_PADDING = 8; // Padding around the grid
 const CARD_MARGIN = 4; // Margin around each card
 
+const CATEGORIES = [
+  { id: 'all', label: 'All', icon: 'apps' },
+  { id: 'interior', label: 'Interior Design', icon: 'home-variant' },
+  { id: 'food', label: 'Food', icon: 'food' },
+  { id: 'travel', label: 'Travel', icon: 'airplane' },
+  { id: 'tech', label: 'Technology', icon: 'laptop' },
+  { id: 'architecture', label: 'Architecture', icon: 'office-building' },
+  { id: 'nature', label: 'Nature', icon: 'tree' }
+];
+
 const HomeFeedScreen = () => {
   const navigation = useNavigation();
+  const theme = useTheme();
   const { width: screenWidth } = useWindowDimensions();
   const [pins, setPins] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState('all');
 
   // Calculate number of columns based on screen width
   const numColumns = Math.max(2, Math.floor((screenWidth - (GRID_PADDING * 2)) / MIN_COLUMN_WIDTH));
@@ -48,6 +62,21 @@ const HomeFeedScreen = () => {
     fetchPins();
   };
 
+  const filterPins = useCallback(() => {
+    return pins.filter(pin => {
+      const matchesSearch = searchQuery === '' ||
+        pin.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        pin.description.toLowerCase().includes(searchQuery.toLowerCase());
+      
+      const category = CATEGORIES.find(cat => cat.id === selectedCategory);
+      const matchesCategory = selectedCategory === 'all' ||
+        pin.title.includes(category.label) ||
+        pin.description.includes(category.label);
+
+      return matchesSearch && matchesCategory;
+    });
+  }, [pins, searchQuery, selectedCategory]);
+
   const renderPin = ({ item }) => (
     <Card
       style={[styles.card, { width: columnWidth }]}
@@ -71,15 +100,64 @@ const HomeFeedScreen = () => {
   if (loading) {
     return (
       <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" />
+        <ActivityIndicator size="large" color={theme.colors.primary} />
       </View>
     );
   }
 
+  const filteredPins = filterPins();
+
   return (
     <View style={styles.container}>
+      <View style={styles.searchContainer}>
+        <Searchbar
+          placeholder="Search pins..."
+          onChangeText={setSearchQuery}
+          value={searchQuery}
+          style={styles.searchBar}
+          iconColor={theme.colors.primary}
+          placeholderTextColor={theme.colors.placeholder}
+          inputStyle={styles.searchInput}
+          icon={({ size, color }) => (
+            <MaterialCommunityIcons name="magnify" size={size} color={color} />
+          )}
+          clearIcon={({ size, color }) => (
+            <MaterialCommunityIcons name="close" size={size} color={color} />
+          )}
+        />
+      </View>
+      
+      <View style={styles.categoriesContainer}>
+        <FlatList
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          data={CATEGORIES}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <Chip
+              selected={selectedCategory === item.id}
+              onPress={() => setSelectedCategory(item.id)}
+              style={styles.categoryChip}
+              selectedColor={theme.colors.primary}
+              textStyle={styles.chipText}
+              icon={({ size, color }) => (
+                <MaterialCommunityIcons 
+                  name={item.icon} 
+                  size={size - 4} 
+                  color={color}
+                  style={styles.chipIcon}
+                />
+              )}
+            >
+              {item.label}
+            </Chip>
+          )}
+          contentContainerStyle={styles.categoriesList}
+        />
+      </View>
+
       <FlatList
-        data={pins}
+        data={filteredPins}
         renderItem={renderPin}
         keyExtractor={(item) => item._id}
         numColumns={numColumns}
@@ -87,15 +165,24 @@ const HomeFeedScreen = () => {
         contentContainerStyle={[styles.list, { padding: GRID_PADDING }]}
         columnWrapperStyle={styles.columnWrapper}
         refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          <RefreshControl 
+            refreshing={refreshing} 
+            onRefresh={onRefresh}
+            colors={[theme.colors.primary]}
+          />
         }
         ListEmptyComponent={
-          <Text style={styles.emptyText}>No pins found</Text>
+          <Text style={[styles.emptyText, { color: theme.colors.placeholder }]}>
+            No pins found
+          </Text>
         }
       />
       <FAB
-        icon="plus"
-        style={styles.fab}
+        icon={({ size, color }) => (
+          <MaterialCommunityIcons name="plus" size={size} color={color} />
+        )}
+        style={[styles.fab, { backgroundColor: theme.colors.primary }]}
+        color="white"
         onPress={() => navigation.navigate('CreatePin')}
       />
     </View>
@@ -106,6 +193,42 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
+  },
+  searchContainer: {
+    padding: 8,
+    backgroundColor: '#fff',
+    elevation: 2,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0, 0, 0, 0.05)',
+  },
+  searchBar: {
+    elevation: 0,
+    backgroundColor: '#f5f5f5',
+    borderRadius: 8,
+  },
+  searchInput: {
+    fontSize: 14,
+  },
+  categoriesContainer: {
+    backgroundColor: '#fff',
+    elevation: 2,
+    marginBottom: 4,
+    borderBottomWidth: 1,
+    borderBottomColor: 'rgba(0, 0, 0, 0.05)',
+  },
+  categoriesList: {
+    paddingHorizontal: 8,
+    paddingVertical: 12,
+  },
+  categoryChip: {
+    marginRight: 8,
+    backgroundColor: '#f5f5f5',
+  },
+  chipText: {
+    fontSize: 12,
+  },
+  chipIcon: {
+    marginLeft: 4,
   },
   loadingContainer: {
     flex: 1,
@@ -137,7 +260,6 @@ const styles = StyleSheet.create({
   emptyText: {
     textAlign: 'center',
     marginTop: 32,
-    color: '#666',
   },
   fab: {
     position: 'absolute',
