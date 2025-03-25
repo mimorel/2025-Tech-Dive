@@ -220,6 +220,39 @@ const BoardDetailScreen = () => {
               {board.description}
             </Text>
 
+            <View style={styles.metadataContainer}>
+              <View style={styles.metadataItem}>
+                <MaterialCommunityIcons 
+                  name={board.isPrivate ? "lock" : "lock-open-variant"} 
+                  size={16} 
+                  color="#B0B0B0" 
+                />
+                <Text style={[styles.metadataText, { color: '#B0B0B0' }]}>
+                  {board.isPrivate ? "Private" : "Public"}
+                </Text>
+              </View>
+              <View style={styles.metadataItem}>
+                <MaterialCommunityIcons 
+                  name="account-group" 
+                  size={16} 
+                  color="#B0B0B0" 
+                />
+                <Text style={[styles.metadataText, { color: '#B0B0B0' }]}>
+                  {board.collaborators.length} Collaborators
+                </Text>
+              </View>
+              <View style={styles.metadataItem}>
+                <MaterialCommunityIcons 
+                  name="calendar" 
+                  size={16} 
+                  color="#B0B0B0" 
+                />
+                <Text style={[styles.metadataText, { color: '#B0B0B0' }]}>
+                  Created {new Date(board.createdAt).toLocaleDateString()}
+                </Text>
+              </View>
+            </View>
+
             <View style={styles.authorSection}>
               <TouchableOpacity
                 style={styles.authorInfo}
@@ -255,34 +288,7 @@ const BoardDetailScreen = () => {
               )}
             </View>
 
-            <View style={styles.chipRow}>
-              {isPrivate && (
-                <Chip 
-                  icon="lock" 
-                  style={styles.chip} 
-                  textStyle={{ color: '#FFFFFF' }}
-                  mode="outlined"
-                >
-                  Private
-                </Chip>
-              )}
-              <Chip 
-                icon="account-multiple" 
-                style={styles.chip} 
-                textStyle={{ color: '#FFFFFF' }}
-                mode="outlined"
-              >
-                {board.collaborators.length} Collaborators
-              </Chip>
-              <Chip 
-                icon="calendar" 
-                style={styles.chip} 
-                textStyle={{ color: '#FFFFFF' }}
-                mode="outlined"
-              >
-                Created {new Date(board.createdAt).toLocaleDateString()}
-              </Chip>
-            </View>
+            
 
             <View style={styles.stats}>
               <View style={styles.statItem}>
@@ -516,6 +522,24 @@ const styles = StyleSheet.create({
   description: {
     marginBottom: 16,
     lineHeight: 20,
+  },
+  metadataContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 16,
+    marginVertical: 12,
+    paddingVertical: 8,
+    borderTopWidth: 1,
+    borderBottomWidth: 1,
+    borderColor: '#2A2A2A',
+  },
+  metadataItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+  },
+  metadataText: {
+    fontSize: 14,
   },
   authorSection: {
     flexDirection: 'row',
