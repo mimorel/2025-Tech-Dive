@@ -209,11 +209,11 @@ const PinDetailScreen = () => {
         resizeMode="cover"
       />
 
-      <Surface style={[styles.content, { backgroundColor: '#fff' }]}>
+      <Surface style={[styles.content, { backgroundColor: '#1E1E1E' }]}>
         {/* Header Actions */}
         <View style={styles.headerActions}>
           <IconButton
-            icon={() => <MaterialCommunityIcons name="dots-horizontal" size={24} color={theme.colors.onSurface} />}
+            icon={() => <MaterialCommunityIcons name="dots-horizontal" size={24} color="#FFFFFF" />}
             size={24}
             onPress={() => setMenuVisible(true)}
           />
@@ -225,32 +225,32 @@ const PinDetailScreen = () => {
             <Menu.Item 
               onPress={handleShare} 
               title="Share" 
-              leadingIcon={() => <MaterialCommunityIcons name="share" size={24} color={theme.colors.onSurface} />}
+              leadingIcon={() => <MaterialCommunityIcons name="share" size={24} color="#FFFFFF" />}
             />
             <Menu.Item 
               onPress={handleCopyLink} 
               title="Copy link" 
-              leadingIcon={() => <MaterialCommunityIcons name="link" size={24} color={theme.colors.onSurface} />}
+              leadingIcon={() => <MaterialCommunityIcons name="link" size={24} color="#FFFFFF" />}
             />
             <Menu.Item 
               onPress={handleReport} 
               title="Report" 
-              leadingIcon={() => <MaterialCommunityIcons name="flag" size={24} color={theme.colors.onSurface} />}
+              leadingIcon={() => <MaterialCommunityIcons name="flag" size={24} color="#FFFFFF" />}
             />
           </Menu>
         </View>
 
         {/* Title and Description */}
         <View style={styles.header}>
-          <Text variant="headlineSmall" style={[styles.title, { color: theme.colors.onSurface }]}>
+          <Text variant="headlineSmall" style={[styles.title, { color: '#FFFFFF' }]}>
             {pin.title}
           </Text>
-          <Text variant="bodyLarge" style={[styles.description, { color: theme.colors.onSurfaceVariant }]}>
+          <Text variant="bodyLarge" style={[styles.description, { color: '#B0B0B0' }]}>
             {pin.description}
           </Text>
         </View>
 
-        <Divider style={styles.divider} />
+        <Divider style={[styles.divider, { backgroundColor: '#333333' }]} />
 
         {/* Author Section */}
         <TouchableOpacity 
@@ -262,23 +262,24 @@ const PinDetailScreen = () => {
             source={{ uri: pin.author?.avatar || 'https://via.placeholder.com/40' }}
           />
           <View style={styles.authorInfo}>
-            <Text variant="titleMedium" style={{ color: theme.colors.onSurface }}>
+            <Text variant="titleMedium" style={{ color: '#FFFFFF' }}>
               {pin.author?.username}
             </Text>
-            <Text variant="bodyMedium" style={[styles.followers, { color: theme.colors.onSurfaceVariant }]}>
+            <Text variant="bodyMedium" style={[styles.followers, { color: '#B0B0B0' }]}>
               {pin.author?.followers?.length || 0} followers
             </Text>
           </View>
           <Button 
             mode="outlined" 
             onPress={() => {}}
-            style={{ borderColor: theme.colors.primary }}
+            style={{ borderColor: '#9C27B0' }}
+            textColor="#9C27B0"
           >
             Follow
           </Button>
         </TouchableOpacity>
 
-        <Divider style={styles.divider} />
+        <Divider style={[styles.divider, { backgroundColor: '#333333' }]} />
 
         {/* Board Section */}
         <TouchableOpacity 
@@ -290,40 +291,40 @@ const PinDetailScreen = () => {
             style={styles.boardImage}
           />
           <View style={styles.boardInfo}>
-            <Text variant="titleMedium" style={{ color: theme.colors.onSurface }}>
+            <Text variant="titleMedium" style={{ color: '#FFFFFF' }}>
               {pin.board?.name}
             </Text>
-            <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
+            <Text variant="bodyMedium" style={{ color: '#B0B0B0' }}>
               {pin.board?.pins?.length || 0} pins
             </Text>
           </View>
         </TouchableOpacity>
 
-        <Divider style={styles.divider} />
+        <Divider style={[styles.divider, { backgroundColor: '#333333' }]} />
 
         {/* Stats and Actions */}
         <View style={styles.statsSection}>
           <View style={styles.stats}>
-            <Text variant="titleMedium" style={{ color: theme.colors.onSurface }}>
+            <Text variant="titleMedium" style={{ color: '#FFFFFF' }}>
               {pin.likes?.length || 0}
             </Text>
-            <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
+            <Text variant="bodyMedium" style={{ color: '#B0B0B0' }}>
               likes
             </Text>
           </View>
           <View style={styles.stats}>
-            <Text variant="titleMedium" style={{ color: theme.colors.onSurface }}>
+            <Text variant="titleMedium" style={{ color: '#FFFFFF' }}>
               {pin.savedBy?.length || 0}
             </Text>
-            <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
+            <Text variant="bodyMedium" style={{ color: '#B0B0B0' }}>
               saves
             </Text>
           </View>
           <View style={styles.stats}>
-            <Text variant="titleMedium" style={{ color: theme.colors.onSurface }}>
+            <Text variant="titleMedium" style={{ color: '#FFFFFF' }}>
               {comments.length}
             </Text>
-            <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
+            <Text variant="bodyMedium" style={{ color: '#B0B0B0' }}>
               comments
             </Text>
           </View>
@@ -336,7 +337,7 @@ const PinDetailScreen = () => {
               <MaterialCommunityIcons 
                 name={isLiked ? 'heart' : 'heart-outline'} 
                 size={24} 
-                color={isLiked ? theme.colors.error : theme.colors.onSurface} 
+                color={isLiked ? '#E91E63' : '#FFFFFF'} 
               />
             )}
             size={24}
@@ -347,7 +348,7 @@ const PinDetailScreen = () => {
               <MaterialCommunityIcons 
                 name={isSaved ? 'bookmark' : 'bookmark-outline'} 
                 size={24} 
-                color={isSaved ? theme.colors.primary : theme.colors.onSurface} 
+                color={isSaved ? '#9C27B0' : '#FFFFFF'} 
               />
             )}
             size={24}
@@ -358,7 +359,7 @@ const PinDetailScreen = () => {
               <MaterialCommunityIcons 
                 name="comment-outline" 
                 size={24} 
-                color={theme.colors.onSurface} 
+                color="#FFFFFF" 
               />
             )}
             size={24}
@@ -369,7 +370,7 @@ const PinDetailScreen = () => {
               <MaterialCommunityIcons 
                 name="share-variant" 
                 size={24} 
-                color={theme.colors.onSurface} 
+                color="#FFFFFF" 
               />
             )}
             size={24}
@@ -377,11 +378,11 @@ const PinDetailScreen = () => {
           />
         </View>
 
-        <Divider style={styles.divider} />
+        <Divider style={[styles.divider, { backgroundColor: '#333333' }]} />
 
         {/* Comments Section */}
         <View style={styles.commentsSection}>
-          <Text variant="titleMedium" style={[styles.sectionTitle, { color: theme.colors.onSurface }]}>
+          <Text variant="titleMedium" style={[styles.sectionTitle, { color: '#FFFFFF' }]}>
             Comments
           </Text>
           {comments.length > 0 ? (
@@ -391,18 +392,18 @@ const PinDetailScreen = () => {
                   size={32}
                   source={{ uri: comment.author?.avatar || 'https://via.placeholder.com/32' }}
                 />
-                <View style={[styles.commentContent, { backgroundColor: theme.colors.surfaceVariant }]}>
-                  <Text variant="bodyMedium" style={[styles.commentAuthor, { color: theme.colors.onSurface }]}>
+                <View style={[styles.commentContent, { backgroundColor: '#2D2D2D' }]}>
+                  <Text variant="bodyMedium" style={[styles.commentAuthor, { color: '#FFFFFF' }]}>
                     {comment.author?.username}
                   </Text>
-                  <Text variant="bodyMedium" style={{ color: theme.colors.onSurfaceVariant }}>
+                  <Text variant="bodyMedium" style={{ color: '#B0B0B0' }}>
                     {comment.text}
                   </Text>
                 </View>
               </View>
             ))
           ) : (
-            <Text style={[styles.emptyText, { color: theme.colors.onSurfaceVariant }]}>
+            <Text style={[styles.emptyText, { color: '#B0B0B0' }]}>
               No comments yet
             </Text>
           )}
@@ -414,8 +415,9 @@ const PinDetailScreen = () => {
         <Dialog
           visible={commentDialogVisible}
           onDismiss={() => setCommentDialogVisible(false)}
+          style={{ backgroundColor: '#1E1E1E' }}
         >
-          <Dialog.Title>Add a comment</Dialog.Title>
+          <Dialog.Title style={{ color: '#FFFFFF' }}>Add a comment</Dialog.Title>
           <Dialog.Content>
             <TextInput
               mode="outlined"
@@ -423,11 +425,14 @@ const PinDetailScreen = () => {
               onChangeText={setNewComment}
               placeholder="Write a comment..."
               multiline
+              style={{ backgroundColor: '#2D2D2D' }}
+              textColor="#FFFFFF"
+              placeholderTextColor="#B0B0B0"
             />
           </Dialog.Content>
           <Dialog.Actions>
-            <Button onPress={() => setCommentDialogVisible(false)}>Cancel</Button>
-            <Button onPress={handleAddComment}>Post</Button>
+            <Button onPress={() => setCommentDialogVisible(false)} textColor="#B0B0B0">Cancel</Button>
+            <Button onPress={handleAddComment} textColor="#9C27B0">Post</Button>
           </Dialog.Actions>
         </Dialog>
       </Portal>
@@ -438,12 +443,13 @@ const PinDetailScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#121212', // Dark background
   },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
+    backgroundColor: '#121212',
   },
   image: {
     width: width,
@@ -455,6 +461,7 @@ const styles = StyleSheet.create({
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     elevation: 4,
+    backgroundColor: '#1E1E1E', // Slightly lighter dark background
   },
   headerActions: {
     flexDirection: 'row',
@@ -467,12 +474,15 @@ const styles = StyleSheet.create({
   title: {
     fontWeight: 'bold',
     marginBottom: 8,
+    color: '#FFFFFF', // White text
   },
   description: {
     lineHeight: 20,
+    color: '#B0B0B0', // Light gray text
   },
   divider: {
     marginVertical: 16,
+    backgroundColor: '#333333', // Dark divider
   },
   authorSection: {
     flexDirection: 'row',
@@ -485,6 +495,7 @@ const styles = StyleSheet.create({
   },
   followers: {
     marginTop: 2,
+    color: '#B0B0B0', // Light gray text
   },
   boardSection: {
     flexDirection: 'row',
@@ -519,6 +530,7 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontWeight: 'bold',
     marginBottom: 12,
+    color: '#FFFFFF', // White text
   },
   comment: {
     flexDirection: 'row',
@@ -529,14 +541,17 @@ const styles = StyleSheet.create({
     marginLeft: 8,
     padding: 8,
     borderRadius: 8,
+    backgroundColor: '#2D2D2D', // Darker background for comments
   },
   commentAuthor: {
     fontWeight: 'bold',
     marginBottom: 4,
+    color: '#FFFFFF', // White text
   },
   emptyText: {
     textAlign: 'center',
     marginTop: 8,
+    color: '#B0B0B0', // Light gray text
   },
 });
 
