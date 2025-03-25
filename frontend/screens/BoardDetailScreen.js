@@ -42,6 +42,7 @@ const BoardDetailScreen = () => {
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [pinScale] = useState(new Animated.Value(1));
   const currentUser = getCurrentUser();
+  const [menuAnchor, setMenuAnchor] = useState({ x: 0, y: 0, width: 0 });
 
   const fetchBoardDetails = async () => {
     try {
@@ -209,6 +210,13 @@ const BoardDetailScreen = () => {
                 <IconButton
                   icon={() => <MaterialCommunityIcons name="dots-vertical" size={24} color="#FFFFFF" />}
                   onPress={() => setMenuVisible(true)}
+                  ref={(ref) => {
+                    if (ref) {
+                      ref.measure((x, y, width, height, pageX, pageY) => {
+                        setMenuAnchor({ x: pageX, y: pageY + height, width });
+                      });
+                    }
+                  }}
                 />
               )}
             </View>
@@ -414,13 +422,18 @@ const BoardDetailScreen = () => {
       <Menu
         visible={menuVisible}
         onDismiss={() => setMenuVisible(false)}
-        anchor={<View />}
-        style={{ backgroundColor: '#1E1E1E' }}
+        anchor={menuAnchor}
+        style={{ 
+          backgroundColor: '#1E1E1E',
+          marginTop: 8,
+          borderRadius: 8,
+          elevation: 4,
+        }}
       >
         <Menu.Item
           onPress={() => {
             setMenuVisible(false);
-            navigation.navigate('EditBoard', { boardId });
+            navigation.navigate('EditBoard', { boardId: board._id });
           }}
           title="Edit Board"
           leadingIcon={() => <MaterialCommunityIcons name="pencil" size={24} color="#FFFFFF" />}

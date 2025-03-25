@@ -19,6 +19,7 @@ import {
   Dialog,
   useTheme,
   ActivityIndicator,
+  Menu,
 } from 'react-native-paper';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
@@ -50,6 +51,8 @@ const EditBoardScreen = () => {
   const [searchResults, setSearchResults] = useState([]);
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState({});
+  const [menuAnchor, setMenuAnchor] = useState({ x: 0, y: 0, width: 0 });
+  const [menuVisible, setMenuVisible] = useState(false);
 
   useEffect(() => {
     fetchBoardDetails();
@@ -361,6 +364,20 @@ const EditBoardScreen = () => {
           </Dialog.Actions>
         </Dialog>
       </Portal>
+
+      {/* Menu */}
+      <Menu
+        visible={menuVisible}
+        onDismiss={() => setMenuVisible(false)}
+        anchor={menuAnchor}
+        style={{ 
+          backgroundColor: '#1E1E1E',
+          marginTop: 8,
+          borderRadius: 8,
+          elevation: 4,
+        }}
+      >
+      </Menu>
     </View>
   );
 };

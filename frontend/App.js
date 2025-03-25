@@ -18,6 +18,7 @@ import EditProfileScreen from './screens/EditProfileScreen';
 import UserBoardsScreen from './screens/UserBoardsScreen';
 import UserPinsScreen from './screens/UserPinsScreen';
 import TrendingScreen from './screens/TrendingScreen';
+import EditBoardScreen from './screens/EditBoardScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -99,6 +100,11 @@ export default function App() {
             name="Trending" 
             component={TrendingScreen}
             options={{ title: 'Trending' }}
+          />
+          <Stack.Screen 
+            name="EditBoard" 
+            component={EditBoardScreen}
+            options={{ title: 'Edit Board' }}
           />
         </Stack.Navigator>
       </NavigationContainer>
