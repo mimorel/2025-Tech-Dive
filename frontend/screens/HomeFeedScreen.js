@@ -26,6 +26,9 @@ const CATEGORIES = [
   { id: 'nature', label: 'Nature', icon: 'tree' }
 ];
 
+const DARK_PURPLE_GREY = '#2F2F3E';
+const LIGHT_PURPLE_GREY = '#3A3A4C';
+
 const HomeFeedScreen = () => {
   const navigation = useNavigation();
   const theme = useTheme();
@@ -109,25 +112,25 @@ const HomeFeedScreen = () => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.searchContainer}>
+      <View style={[styles.searchContainer, { backgroundColor: DARK_PURPLE_GREY }]}>
         <Searchbar
           placeholder="Search pins..."
           onChangeText={setSearchQuery}
           value={searchQuery}
-          style={styles.searchBar}
-          iconColor={theme.colors.primary}
-          placeholderTextColor={theme.colors.placeholder}
-          inputStyle={styles.searchInput}
-          icon={({ size, color }) => (
-            <MaterialCommunityIcons name="magnify" size={size} color={color} />
+          style={[styles.searchBar, { backgroundColor: LIGHT_PURPLE_GREY }]}
+          iconColor="#fff"
+          placeholderTextColor="rgba(255, 255, 255, 0.6)"
+          inputStyle={{ color: '#fff' }}
+          icon={({ size }) => (
+            <MaterialCommunityIcons name="magnify" size={size} color="#fff" />
           )}
-          clearIcon={({ size, color }) => (
-            <MaterialCommunityIcons name="close" size={size} color={color} />
+          clearIcon={({ size }) => (
+            <MaterialCommunityIcons name="close" size={size} color="#fff" />
           )}
         />
       </View>
       
-      <View style={styles.categoriesContainer}>
+      <View style={[styles.categoriesContainer, { backgroundColor: DARK_PURPLE_GREY }]}>
         <FlatList
           horizontal
           showsHorizontalScrollIndicator={false}
@@ -137,15 +140,20 @@ const HomeFeedScreen = () => {
             <Chip
               selected={selectedCategory === item.id}
               onPress={() => setSelectedCategory(item.id)}
-              style={styles.categoryChip}
-              selectedColor={theme.colors.primary}
-              textStyle={styles.chipText}
-              icon={({ size, color }) => (
+              style={[
+                styles.categoryChip,
+                { backgroundColor: LIGHT_PURPLE_GREY },
+                selectedCategory === item.id && { backgroundColor: theme.colors.primary }
+              ]}
+              textStyle={{ 
+                color: selectedCategory === item.id ? '#fff' : 'rgba(255, 255, 255, 0.9)',
+                fontSize: 12
+              }}
+              icon={({ size }) => (
                 <MaterialCommunityIcons 
                   name={item.icon} 
                   size={size - 4} 
-                  color={color}
-                  style={styles.chipIcon}
+                  color={selectedCategory === item.id ? '#fff' : 'rgba(255, 255, 255, 0.9)'}
                 />
               )}
             >
@@ -196,25 +204,19 @@ const styles = StyleSheet.create({
   },
   searchContainer: {
     padding: 8,
-    backgroundColor: '#fff',
     elevation: 2,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0, 0, 0, 0.05)',
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
   },
   searchBar: {
     elevation: 0,
-    backgroundColor: '#f5f5f5',
     borderRadius: 8,
   },
-  searchInput: {
-    fontSize: 14,
-  },
   categoriesContainer: {
-    backgroundColor: '#fff',
     elevation: 2,
     marginBottom: 4,
     borderBottomWidth: 1,
-    borderBottomColor: 'rgba(0, 0, 0, 0.05)',
+    borderBottomColor: 'rgba(255, 255, 255, 0.1)',
   },
   categoriesList: {
     paddingHorizontal: 8,
@@ -222,13 +224,6 @@ const styles = StyleSheet.create({
   },
   categoryChip: {
     marginRight: 8,
-    backgroundColor: '#f5f5f5',
-  },
-  chipText: {
-    fontSize: 12,
-  },
-  chipIcon: {
-    marginLeft: 4,
   },
   loadingContainer: {
     flex: 1,
