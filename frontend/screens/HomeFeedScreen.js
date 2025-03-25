@@ -1,32 +1,36 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   View,
   StyleSheet,
   FlatList,
   RefreshControl,
   Dimensions,
+  useWindowDimensions,
 } from 'react-native';
 import { Text, Card, ActivityIndicator, FAB } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
+import { dummyPins } from '../data/dummyData';
 
-const { width } = Dimensions.get('window');
-const numColumns = 2;
-const itemWidth = width / numColumns - 16;
+const MIN_COLUMN_WIDTH = 150; // Minimum width for each column
+const GRID_PADDING = 8; // Padding around the grid
+const CARD_MARGIN = 4; // Margin around each card
 
 const HomeFeedScreen = () => {
   const navigation = useNavigation();
+  const { width: screenWidth } = useWindowDimensions();
   const [pins, setPins] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
+  // Calculate number of columns based on screen width
+  const numColumns = Math.max(2, Math.floor((screenWidth - (GRID_PADDING * 2)) / MIN_COLUMN_WIDTH));
+  const columnWidth = (screenWidth - (GRID_PADDING * 2) - (CARD_MARGIN * 2 * numColumns)) / numColumns;
+
   const fetchPins = async () => {
     try {
-      const response = await fetch('http://localhost:3000/api/pins');
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to fetch pins');
-      }
-      setPins(data);
+      // Simulate API delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      setPins(dummyPins);
     } catch (error) {
       console.error('Error fetching pins:', error);
     } finally {
@@ -46,15 +50,20 @@ const HomeFeedScreen = () => {
 
   const renderPin = ({ item }) => (
     <Card
-      style={styles.card}
+      style={[styles.card, { width: columnWidth }]}
       onPress={() => navigation.navigate('PinDetail', { pinId: item._id })}
     >
-      <Card.Cover source={{ uri: item.imageUrl }} style={styles.image} />
+      <Card.Cover 
+        source={{ uri: item.imageUrl }} 
+        style={[styles.image, { height: columnWidth * 1.3 }]} // 1.3 aspect ratio
+      />
       <Card.Title
         title={item.title}
         subtitle={item.author.username}
-        titleNumberOfLines={2}
-        style={styles.cardTitle}
+        titleNumberOfLines={1}
+        subtitleNumberOfLines={1}
+        titleStyle={styles.cardTitle}
+        subtitleStyle={styles.cardSubtitle}
       />
     </Card>
   );
@@ -74,9 +83,14 @@ const HomeFeedScreen = () => {
         renderItem={renderPin}
         keyExtractor={(item) => item._id}
         numColumns={numColumns}
-        contentContainerStyle={styles.list}
+        key={numColumns} // Force re-render when number of columns changes
+        contentContainerStyle={[styles.list, { padding: GRID_PADDING }]}
+        columnWrapperStyle={styles.columnWrapper}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+        ListEmptyComponent={
+          <Text style={styles.emptyText}>No pins found</Text>
         }
       />
       <FAB
@@ -99,18 +113,31 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   list: {
-    padding: 8,
+    alignItems: 'flex-start',
+  },
+  columnWrapper: {
+    justifyContent: 'flex-start',
   },
   card: {
-    width: itemWidth,
-    margin: 8,
-    elevation: 4,
+    margin: CARD_MARGIN,
+    elevation: 2,
   },
   image: {
-    height: itemWidth,
+    borderTopLeftRadius: 8,
+    borderTopRightRadius: 8,
   },
   cardTitle: {
-    padding: 8,
+    fontSize: 12,
+    lineHeight: 16,
+  },
+  cardSubtitle: {
+    fontSize: 10,
+    lineHeight: 14,
+  },
+  emptyText: {
+    textAlign: 'center',
+    marginTop: 32,
+    color: '#666',
   },
   fab: {
     position: 'absolute',

@@ -20,6 +20,19 @@ const LoginScreen = ({ navigation }) => {
     setLoading(true);
 
     try {
+      // Temporary frontend-only validation
+      if (formData.email === 'test@test.com' && formData.password === 'test123') {
+        // Store a dummy token
+        await AsyncStorage.setItem('token', 'dummy-token-for-testing');
+        navigation.replace('HomeFeed');
+        return;
+      }
+
+      // Show error for any other credentials during testing
+      throw new Error('Please use test@test.com / test123 for testing');
+
+      // Original backend call - commented out for now
+      /*
       const response = await fetch('http://localhost:3000/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -33,6 +46,7 @@ const LoginScreen = ({ navigation }) => {
 
       await AsyncStorage.setItem('token', data.token);
       navigation.replace('HomeFeed');
+      */
     } catch (err) {
       setError(err.message);
     } finally {
@@ -50,6 +64,11 @@ const LoginScreen = ({ navigation }) => {
           <View>
             <Text variant="headlineMedium" style={styles.title}>Welcome Back</Text>
             {error ? <Text style={styles.error}>{error}</Text> : null}
+            <Text style={styles.testCredentials}>
+              Test credentials:{'\n'}
+              Email: test@test.com{'\n'}
+              Password: test123
+            </Text>
           </View>
         </TouchableWithoutFeedback>
 
@@ -111,6 +130,11 @@ const styles = StyleSheet.create({
   title: {
     marginBottom: 24,
     fontWeight: 'bold',
+  },
+  testCredentials: {
+    marginBottom: 16,
+    color: '#666',
+    textAlign: 'center',
   },
   input: {
     width: '100%',
