@@ -13,6 +13,12 @@ import { Text, Button, Surface, IconButton, Divider, FAB, Menu, Portal, Dialog, 
 import { useNavigation, useRoute } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
+import { 
+  getBoardById,
+  getCurrentUser,
+  isBoardFollowedByUser,
+  getPinById,
+} from '../data/dummyData';
 
 const { width } = Dimensions.get('window');
 const numColumns = 3;
@@ -35,21 +41,22 @@ const BoardDetailScreen = () => {
   const [selectedPins, setSelectedPins] = useState([]);
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [pinScale] = useState(new Animated.Value(1));
+  const currentUser = getCurrentUser();
 
   const fetchBoardDetails = async () => {
     try {
-      const token = await AsyncStorage.getItem('token');
-      const response = await fetch(`http://localhost:3000/api/boards/${boardId}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to fetch board details');
+      setLoading(true);
+      console.log('Fetching board details for ID:', boardId);
+      
+      const foundBoard = getBoardById(boardId);
+      if (!foundBoard) {
+        throw new Error('Board not found');
       }
-      setBoard(data);
-      setIsFollowing(data.followers?.includes(data.currentUser?._id));
+
+      console.log('Found board:', foundBoard);
+      setBoard(foundBoard);
+      setIsFollowing(isBoardFollowedByUser(foundBoard));
+      setIsPrivate(foundBoard.isPrivate);
     } catch (error) {
       console.error('Error fetching board details:', error);
     } finally {
@@ -69,22 +76,13 @@ const BoardDetailScreen = () => {
 
   const handleFollow = async () => {
     try {
-      const token = await AsyncStorage.getItem('token');
-      const response = await fetch(`http://localhost:3000/api/boards/${boardId}/follow`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      if (!response.ok) {
-        throw new Error('Failed to follow board');
-      }
+      // Simulate API call
       setIsFollowing(!isFollowing);
       setBoard(prev => ({
         ...prev,
         followers: isFollowing
-          ? prev.followers.filter(id => id !== prev.currentUser._id)
-          : [...prev.followers, prev.currentUser._id],
+          ? prev.followers.filter(id => id !== currentUser._id)
+          : [...prev.followers, currentUser._id],
       }));
     } catch (error) {
       console.error('Error following board:', error);
@@ -93,16 +91,7 @@ const BoardDetailScreen = () => {
 
   const handleDeleteBoard = async () => {
     try {
-      const token = await AsyncStorage.getItem('token');
-      const response = await fetch(`http://localhost:3000/api/boards/${boardId}`, {
-        method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      if (!response.ok) {
-        throw new Error('Failed to delete board');
-      }
+      // Simulate API call
       navigation.goBack();
     } catch (error) {
       console.error('Error deleting board:', error);
@@ -111,19 +100,12 @@ const BoardDetailScreen = () => {
 
   const toggleBoardPrivacy = async () => {
     try {
-      const token = await AsyncStorage.getItem('token');
-      const response = await fetch(`http://localhost:3000/api/boards/${boardId}/privacy`, {
-        method: 'PUT',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ isPrivate: !isPrivate }),
-      });
-      if (!response.ok) {
-        throw new Error('Failed to update board privacy');
-      }
+      // Simulate API call
       setIsPrivate(!isPrivate);
+      setBoard(prev => ({
+        ...prev,
+        isPrivate: !prev.isPrivate,
+      }));
     } catch (error) {
       console.error('Error updating board privacy:', error);
     }
@@ -147,16 +129,13 @@ const BoardDetailScreen = () => {
 
   const handleDeleteSelectedPins = async () => {
     try {
-      const token = await AsyncStorage.getItem('token');
-      await Promise.all(selectedPins.map(pinId =>
-        fetch(`http://localhost:3000/api/boards/${boardId}/pins/${pinId}`, {
-          method: 'DELETE',
-          headers: { Authorization: `Bearer ${token}` },
-        })
-      ));
+      // Simulate API call
+      setBoard(prev => ({
+        ...prev,
+        pins: prev.pins.filter(pin => !selectedPins.includes(pin._id))
+      }));
       setSelectedPins([]);
       setIsSelectionMode(false);
-      fetchBoardDetails();
     } catch (error) {
       console.error('Error deleting pins:', error);
     }
@@ -184,6 +163,18 @@ const BoardDetailScreen = () => {
     );
   }
 
+  if (!board) {
+    return (
+      <View style={[styles.loadingContainer, { backgroundColor: '#121212' }]}>
+        <Text style={{ color: '#FFFFFF' }}>Board not found</Text>
+      </View>
+    );
+  }
+
+  const isOwner = board.author._id === currentUser._id;
+  const isCollaborator = board.collaborators.some(collab => collab._id === currentUser._id);
+  const canEdit = isOwner || isCollaborator;
+
   return (
     <View style={[styles.container, { backgroundColor: '#121212' }]}>
       <ScrollView
@@ -193,7 +184,7 @@ const BoardDetailScreen = () => {
       >
         <Surface style={[styles.header, { backgroundColor: '#1E1E1E' }]}>
           <Image
-            source={{ uri: board?.coverImage || 'https://via.placeholder.com/400x200' }}
+            source={{ uri: board.coverImage }}
             style={styles.coverImage}
           />
           <View style={styles.headerContent}>
@@ -202,40 +193,66 @@ const BoardDetailScreen = () => {
                 icon={() => <MaterialCommunityIcons name="share-variant" size={24} color="#FFFFFF" />}
                 onPress={() => {}}
               />
-              <IconButton
-                icon={() => <MaterialCommunityIcons name={isPrivate ? "lock" : "lock-open-variant"} size={24} color="#FFFFFF" />}
-                onPress={toggleBoardPrivacy}
-              />
-              <IconButton
-                icon={() => <MaterialCommunityIcons name="account-multiple-plus" size={24} color="#FFFFFF" />}
-                onPress={() => setCollaboratorDialogVisible(true)}
-              />
-              <IconButton
-                icon={() => <MaterialCommunityIcons name="dots-vertical" size={24} color="#FFFFFF" />}
-                onPress={() => setMenuVisible(true)}
-              />
+              {canEdit && (
+                <>
+                  <IconButton
+                    icon={() => <MaterialCommunityIcons name={isPrivate ? "lock" : "lock-open-variant"} size={24} color="#FFFFFF" />}
+                    onPress={toggleBoardPrivacy}
+                  />
+                  <IconButton
+                    icon={() => <MaterialCommunityIcons name="account-multiple-plus" size={24} color="#FFFFFF" />}
+                    onPress={() => setCollaboratorDialogVisible(true)}
+                  />
+                </>
+              )}
+              {isOwner && (
+                <IconButton
+                  icon={() => <MaterialCommunityIcons name="dots-vertical" size={24} color="#FFFFFF" />}
+                  onPress={() => setMenuVisible(true)}
+                />
+              )}
             </View>
 
             <Text variant="headlineSmall" style={[styles.title, { color: '#FFFFFF' }]}>
-              {board?.name}
+              {board.name}
             </Text>
             <Text variant="bodyLarge" style={[styles.description, { color: '#B0B0B0' }]}>
-              {board?.description}
+              {board.description}
             </Text>
 
             <View style={styles.authorSection}>
-              <Image
-                source={{ uri: board?.author?.avatar || 'https://via.placeholder.com/40' }}
-                style={styles.authorAvatar}
-              />
-              <View style={styles.authorInfo}>
-                <Text variant="titleMedium" style={{ color: '#FFFFFF' }}>
-                  {board?.author?.username}
-                </Text>
-                <Text variant="bodyMedium" style={{ color: '#B0B0B0' }}>
-                  {board?.pins?.length || 0} Pins • {board?.followers?.length || 0} Followers
-                </Text>
-              </View>
+              <TouchableOpacity
+                style={styles.authorInfo}
+                onPress={() => navigation.navigate('Profile', { userId: board.author._id })}
+              >
+                <Image
+                  source={{ uri: board.author.avatar }}
+                  style={styles.authorAvatar}
+                />
+                <View style={styles.authorTextInfo}>
+                  <Text variant="titleMedium" style={{ color: '#FFFFFF' }}>
+                    {board.author.username}
+                  </Text>
+                  <Text variant="bodyMedium" style={{ color: '#B0B0B0' }}>
+                    {board.pins.length} Pins • {board.followers.length} Followers
+                  </Text>
+                </View>
+              </TouchableOpacity>
+              {!isOwner && (
+                <Button
+                  mode={isFollowing ? "outlined" : "contained"}
+                  onPress={handleFollow}
+                  style={[
+                    styles.followButton,
+                    {
+                      backgroundColor: isFollowing ? 'transparent' : '#9C27B0',
+                      borderColor: '#9C27B0'
+                    }
+                  ]}
+                >
+                  {isFollowing ? 'Following' : 'Follow'}
+                </Button>
+              )}
             </View>
 
             <View style={styles.chipRow}>
@@ -255,7 +272,15 @@ const BoardDetailScreen = () => {
                 textStyle={{ color: '#FFFFFF' }}
                 mode="outlined"
               >
-                {board?.collaborators?.length || 0} Collaborators
+                {board.collaborators.length} Collaborators
+              </Chip>
+              <Chip 
+                icon="calendar" 
+                style={styles.chip} 
+                textStyle={{ color: '#FFFFFF' }}
+                mode="outlined"
+              >
+                Created {new Date(board.createdAt).toLocaleDateString()}
               </Chip>
             </View>
 
@@ -263,33 +288,18 @@ const BoardDetailScreen = () => {
               <View style={styles.statItem}>
                 <MaterialCommunityIcons name="pin" size={24} color="#9C27B0" />
                 <Text style={[styles.statValue, { color: '#FFFFFF' }]}>
-                  {board?.pins?.length || 0}
+                  {board.pins.length}
                 </Text>
                 <Text style={[styles.statLabel, { color: '#B0B0B0' }]}>Pins</Text>
               </View>
               <View style={styles.statItem}>
                 <MaterialCommunityIcons name="account-group" size={24} color="#9C27B0" />
                 <Text style={[styles.statValue, { color: '#FFFFFF' }]}>
-                  {board?.followers?.length || 0}
+                  {board.followers.length}
                 </Text>
                 <Text style={[styles.statLabel, { color: '#B0B0B0' }]}>Followers</Text>
               </View>
             </View>
-
-            <Button
-              mode={isFollowing ? 'outlined' : 'contained'}
-              onPress={handleFollow}
-              style={[
-                styles.followButton,
-                {
-                  backgroundColor: isFollowing ? 'transparent' : '#9C27B0',
-                  borderColor: '#9C27B0'
-                }
-              ]}
-              textColor={isFollowing ? '#9C27B0' : '#FFFFFF'}
-            >
-              {isFollowing ? 'Following' : 'Follow'}
-            </Button>
           </View>
         </Surface>
 
@@ -309,7 +319,7 @@ const BoardDetailScreen = () => {
         </View>
 
         <View style={styles.pinsGrid}>
-          {sortPins(board?.pins)?.map((pin) => (
+          {sortPins(board.pins)?.map((pin) => (
             <TouchableOpacity
               key={pin._id}
               style={[
@@ -362,14 +372,16 @@ const BoardDetailScreen = () => {
         </View>
       </ScrollView>
 
-      <FAB
-        icon={({ size, color }) => (
-          <MaterialCommunityIcons name="plus" size={24} color={color} />
-        )}
-        style={[styles.fab, { backgroundColor: '#9C27B0' }]}
-        onPress={() => navigation.navigate('CreatePin', { boardId })}
-        color="#FFFFFF"
-      />
+      {canEdit && (
+        <FAB
+          icon={({ size, color }) => (
+            <MaterialCommunityIcons name="plus" size={24} color={color} />
+          )}
+          style={[styles.fab, { backgroundColor: '#9C27B0' }]}
+          onPress={() => navigation.navigate('CreatePin', { boardId })}
+          color="#FFFFFF"
+        />
+      )}
 
       {isSelectionMode && (
         <View style={styles.selectionToolbar}>
@@ -443,7 +455,7 @@ const BoardDetailScreen = () => {
           <Dialog.Title style={{ color: '#FFFFFF' }}>Manage Collaborators</Dialog.Title>
           <Dialog.Content>
             <View style={styles.collaboratorsList}>
-              {board?.collaborators?.map(collaborator => (
+              {board.collaborators.map(collaborator => (
                 <View key={collaborator._id} style={styles.collaboratorItem}>
                   <Image
                     source={{ uri: collaborator.avatar }}
@@ -510,14 +522,22 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 16,
   },
+  authorInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
   authorAvatar: {
     width: 40,
     height: 40,
     borderRadius: 20,
     marginRight: 12,
   },
-  authorInfo: {
+  authorTextInfo: {
     flex: 1,
+  },
+  followButton: {
+    marginLeft: 12,
   },
   stats: {
     flexDirection: 'row',
@@ -534,9 +554,6 @@ const styles = StyleSheet.create({
   },
   statLabel: {
     fontSize: 12,
-  },
-  followButton: {
-    marginTop: 8,
   },
   divider: {
     marginVertical: 8,
