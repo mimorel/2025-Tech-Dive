@@ -12,6 +12,7 @@ import { TextInput, Button, Text, Surface, HelperText, IconButton } from 'react-
 import { useNavigation, useRoute } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
 
 const CreatePinScreen = () => {
   const navigation = useNavigation();
@@ -121,7 +122,7 @@ const CreatePinScreen = () => {
               {pinId ? 'Edit Pin' : 'Create Pin'}
             </Text>
             <IconButton
-              icon="close"
+              icon={() => <MaterialCommunityIcons name="close" size={24} color="#FFFFFF" />}
               size={24}
               onPress={() => navigation.goBack()}
               style={styles.closeButton}
@@ -140,7 +141,8 @@ const CreatePinScreen = () => {
                 />
               ) : (
                 <View style={styles.imagePlaceholder}>
-                  <Text>Tap to select an image</Text>
+                  <MaterialCommunityIcons name="image-plus" size={40} color="#666666" />
+                  <Text style={styles.placeholderText}>Tap to select an image</Text>
                 </View>
               )}
             </TouchableOpacity>
@@ -151,6 +153,9 @@ const CreatePinScreen = () => {
               value={formData.title}
               onChangeText={(text) => setFormData({ ...formData, title: text })}
               style={styles.input}
+              theme={{ colors: { text: '#FFFFFF', placeholder: '#666666' } }}
+              outlineColor="#333333"
+              activeOutlineColor="#FFFFFF"
             />
 
             <TextInput
@@ -161,6 +166,9 @@ const CreatePinScreen = () => {
               multiline
               numberOfLines={4}
               style={styles.input}
+              theme={{ colors: { text: '#FFFFFF', placeholder: '#666666' } }}
+              outlineColor="#333333"
+              activeOutlineColor="#FFFFFF"
             />
 
             <TextInput
@@ -173,8 +181,11 @@ const CreatePinScreen = () => {
                 onSelect: (boardId) => setFormData({ ...formData, boardId }),
               })}
               editable={false}
-              right={<TextInput.Icon icon="chevron-down" />}
+              right={<TextInput.Icon icon={() => <MaterialCommunityIcons name="chevron-down" size={24} color="#FFFFFF" />} />}
               style={styles.input}
+              theme={{ colors: { text: '#FFFFFF', placeholder: '#666666' } }}
+              outlineColor="#333333"
+              activeOutlineColor="#FFFFFF"
             />
 
             <Button
@@ -182,6 +193,8 @@ const CreatePinScreen = () => {
               onPress={handleSubmit}
               loading={loading}
               style={styles.button}
+              buttonColor="#E60023"
+              textColor="#FFFFFF"
             >
               {pinId ? 'Update Pin' : 'Create Pin'}
             </Button>
@@ -199,14 +212,11 @@ const styles = StyleSheet.create({
   },
   overlay: {
     flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    backgroundColor: 'rgba(0, 0, 0, 0.7)',
     justifyContent: 'flex-end',
   },
-  overlayTouchable: {
-    flex: 1,
-  },
   modalContent: {
-    backgroundColor: '#FFFFFF',
+    backgroundColor: '#1A1A1A',
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     maxHeight: '90%',
@@ -217,7 +227,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 16,
     borderBottomWidth: 1,
-    borderBottomColor: '#E0E0E0',
+    borderBottomColor: '#333333',
   },
   closeButton: {
     margin: 0,
@@ -227,6 +237,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontWeight: 'bold',
+    color: '#FFFFFF',
   },
   imageContainer: {
     width: '100%',
@@ -242,12 +253,17 @@ const styles = StyleSheet.create({
   imagePlaceholder: {
     width: '100%',
     height: '100%',
-    backgroundColor: '#e0e0e0',
+    backgroundColor: '#333333',
     justifyContent: 'center',
     alignItems: 'center',
   },
+  placeholderText: {
+    color: '#666666',
+    marginTop: 8,
+  },
   input: {
     marginBottom: 16,
+    backgroundColor: '#1A1A1A',
   },
   button: {
     marginTop: 8,
