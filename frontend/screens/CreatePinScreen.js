@@ -6,8 +6,9 @@ import {
   Image,
   TouchableOpacity,
   Platform,
+  Modal,
 } from 'react-native';
-import { TextInput, Button, Text, Surface, HelperText } from 'react-native-paper';
+import { TextInput, Button, Text, Surface, HelperText, IconButton } from 'react-native-paper';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
@@ -104,87 +105,128 @@ const CreatePinScreen = () => {
   };
 
   return (
-    <ScrollView style={styles.container}>
-      <Surface style={styles.content}>
-        <Text variant="headlineSmall" style={styles.title}>
-          {pinId ? 'Edit Pin' : 'Create Pin'}
-        </Text>
-
-        {error ? <HelperText type="error">{error}</HelperText> : null}
-
-        <TouchableOpacity onPress={pickImage} style={styles.imageContainer}>
-          {formData.imageUrl ? (
-            <Image
-              source={{ uri: formData.imageUrl }}
-              style={styles.image}
-              resizeMode="cover"
-            />
-          ) : (
-            <View style={styles.imagePlaceholder}>
-              <Text>Tap to select an image</Text>
-            </View>
-          )}
-        </TouchableOpacity>
-
-        <TextInput
-          mode="outlined"
-          label="Title"
-          value={formData.title}
-          onChangeText={(text) => setFormData({ ...formData, title: text })}
-          style={styles.input}
-        />
-
-        <TextInput
-          mode="outlined"
-          label="Description"
-          value={formData.description}
-          onChangeText={(text) => setFormData({ ...formData, description: text })}
-          multiline
-          numberOfLines={4}
-          style={styles.input}
-        />
-
-        <TextInput
-          mode="outlined"
-          label="Board"
-          value={boards.find(b => b._id === formData.boardId)?.name || ''}
-          onPressIn={() => navigation.navigate('SelectBoard', {
-            boards,
-            selectedBoardId: formData.boardId,
-            onSelect: (boardId) => setFormData({ ...formData, boardId }),
-          })}
-          editable={false}
-          right={<TextInput.Icon icon="chevron-down" />}
-          style={styles.input}
-        />
-
-        <Button
-          mode="contained"
-          onPress={handleSubmit}
-          loading={loading}
-          style={styles.button}
+    <View style={styles.modalContainer}>
+      <TouchableOpacity 
+        style={styles.overlay} 
+        activeOpacity={1} 
+        onPress={() => navigation.goBack()}
+      >
+        <TouchableOpacity 
+          style={styles.modalContent}
+          activeOpacity={1}
+          onPress={(e) => e.stopPropagation()}
         >
-          {pinId ? 'Update Pin' : 'Create Pin'}
-        </Button>
-      </Surface>
-    </ScrollView>
+          <View style={styles.modalHeader}>
+            <Text variant="headlineSmall" style={styles.title}>
+              {pinId ? 'Edit Pin' : 'Create Pin'}
+            </Text>
+            <IconButton
+              icon="close"
+              size={24}
+              onPress={() => navigation.goBack()}
+              style={styles.closeButton}
+            />
+          </View>
+
+          <ScrollView style={styles.scrollContent}>
+            {error ? <HelperText type="error">{error}</HelperText> : null}
+
+            <TouchableOpacity onPress={pickImage} style={styles.imageContainer}>
+              {formData.imageUrl ? (
+                <Image
+                  source={{ uri: formData.imageUrl }}
+                  style={styles.image}
+                  resizeMode="cover"
+                />
+              ) : (
+                <View style={styles.imagePlaceholder}>
+                  <Text>Tap to select an image</Text>
+                </View>
+              )}
+            </TouchableOpacity>
+
+            <TextInput
+              mode="outlined"
+              label="Title"
+              value={formData.title}
+              onChangeText={(text) => setFormData({ ...formData, title: text })}
+              style={styles.input}
+            />
+
+            <TextInput
+              mode="outlined"
+              label="Description"
+              value={formData.description}
+              onChangeText={(text) => setFormData({ ...formData, description: text })}
+              multiline
+              numberOfLines={4}
+              style={styles.input}
+            />
+
+            <TextInput
+              mode="outlined"
+              label="Board"
+              value={boards.find(b => b._id === formData.boardId)?.name || ''}
+              onPressIn={() => navigation.navigate('SelectBoard', {
+                boards,
+                selectedBoardId: formData.boardId,
+                onSelect: (boardId) => setFormData({ ...formData, boardId }),
+              })}
+              editable={false}
+              right={<TextInput.Icon icon="chevron-down" />}
+              style={styles.input}
+            />
+
+            <Button
+              mode="contained"
+              onPress={handleSubmit}
+              loading={loading}
+              style={styles.button}
+            >
+              {pinId ? 'Update Pin' : 'Create Pin'}
+            </Button>
+          </ScrollView>
+        </TouchableOpacity>
+      </TouchableOpacity>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  container: {
+  modalContainer: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: 'transparent',
   },
-  content: {
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  overlayTouchable: {
+    flex: 1,
+  },
+  modalContent: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    maxHeight: '90%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
     padding: 16,
-    margin: 16,
-    elevation: 4,
-    borderRadius: 8,
+    borderBottomWidth: 1,
+    borderBottomColor: '#E0E0E0',
+  },
+  closeButton: {
+    margin: 0,
+  },
+  scrollContent: {
+    padding: 16,
   },
   title: {
     fontWeight: 'bold',
-    marginBottom: 16,
   },
   imageContainer: {
     width: '100%',
@@ -209,6 +251,7 @@ const styles = StyleSheet.create({
   },
   button: {
     marginTop: 8,
+    marginBottom: 16,
   },
 });
 
