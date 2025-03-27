@@ -19,10 +19,23 @@ const SelectBoardScreen = () => {
   const route = useRoute();
   const { boards, selectedBoardId, onSelect } = route.params;
 
-  console.log('SelectBoardScreen mounted with:', { boards, selectedBoardId, onSelect });
+  console.log('SelectBoardScreen mounted with:', { 
+    boards: boards.map(board => ({
+      id: board._id,
+      name: board.name,
+      pinCount: board.pins?.length || 0,
+      isSelected: board._id === selectedBoardId
+    })),
+    selectedBoardId,
+    onSelect: !!onSelect 
+  });
 
   const handleSelect = (boardId) => {
-    console.log('Handling board selection:', boardId);
+    console.log('Handling board selection:', {
+      boardId,
+      boardName: boards.find(b => b._id === boardId)?.name,
+      wasPreviouslySelected: boardId === selectedBoardId
+    });
     if (onSelect) {
       onSelect(boardId);
       navigation.goBack();
@@ -67,15 +80,6 @@ const SelectBoardScreen = () => {
 
   return (
     <View style={styles.container}>
-      <View style={styles.header}>
-        <Text variant="headlineSmall" style={styles.title}>
-          Select Board
-        </Text>
-        <Text variant="bodyLarge" style={styles.subtitle}>
-          Choose a board to save your pin
-        </Text>
-      </View>
-
       <FlatList
         data={boards}
         renderItem={renderBoard}
@@ -100,20 +104,6 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#121212',
-  },
-  header: {
-    padding: 16,
-    backgroundColor: '#1A1A1A',
-    borderBottomWidth: 1,
-    borderBottomColor: '#333333',
-  },
-  title: {
-    fontWeight: 'bold',
-    color: '#FFFFFF',
-    marginBottom: 4,
-  },
-  subtitle: {
-    color: '#666666',
   },
   list: {
     padding: 8,

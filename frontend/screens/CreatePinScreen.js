@@ -7,6 +7,8 @@ import {
   TouchableOpacity,
   Platform,
   Modal,
+  FlatList,
+  Dimensions,
 } from 'react-native';
 import { TextInput, Button, Text, Surface, HelperText, IconButton } from 'react-native-paper';
 import { useNavigation, useRoute } from '@react-navigation/native';
@@ -28,6 +30,7 @@ const CreatePinScreen = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [modalVisible, setModalVisible] = useState(true);
+  const [selectBoardModalVisible, setSelectBoardModalVisible] = useState(false);
 
   useEffect(() => {
     fetchBoards();
@@ -72,10 +75,48 @@ const CreatePinScreen = () => {
     }
   };
 
-  const closeModal = () => {
-    setModalVisible(false);
-    navigation.goBack();
+  const handleBoardSelect = (boardId) => {
+    console.log('Selected board:', boardId);
+    setFormData(prevData => {
+      console.log('Updating formData with new boardId:', boardId);
+      return { ...prevData, boardId };
+    });
+    setSelectBoardModalVisible(false);
   };
+
+  const renderBoard = ({ item }) => (
+    <TouchableOpacity
+      onPress={() => handleBoardSelect(item._id)}
+      style={[
+        styles.boardCard,
+        formData.boardId === item._id && styles.selectedBoard,
+      ]}
+    >
+      <View style={styles.boardContent}>
+        <View style={styles.imageContainer}>
+          {item.coverImage ? (
+            <Image
+              source={{ uri: item.coverImage }}
+              style={styles.boardImage}
+              resizeMode="cover"
+            />
+          ) : (
+            <View style={styles.imagePlaceholder}>
+              <Text style={styles.placeholderText}>No Cover</Text>
+            </View>
+          )}
+        </View>
+        <View style={styles.boardInfo}>
+          <Text style={styles.boardName} numberOfLines={2}>
+            {item.name}
+          </Text>
+          <Text style={styles.pinCount}>
+            {item.pins?.length || 0} pins
+          </Text>
+        </View>
+      </View>
+    </TouchableOpacity>
+  );
 
   const handleSubmit = async () => {
     console.log('Submitting form data:', formData);
@@ -126,7 +167,7 @@ const CreatePinScreen = () => {
       navigation.navigate('Profile', { refresh: true });
 
       // Close the modal
-      closeModal();
+      setModalVisible(false);
     } catch (error) {
       console.error('Error creating pin:', error);
       setError(error.message || 'Failed to create pin. Please try again.');
@@ -140,13 +181,13 @@ const CreatePinScreen = () => {
       animationType="slide"
       transparent={true}
       visible={modalVisible}
-      onRequestClose={closeModal}
+      onRequestClose={() => setModalVisible(false)}
     >
       <View style={styles.modalContainer}>
         <TouchableOpacity 
           style={styles.overlay} 
           activeOpacity={1} 
-          onPress={closeModal}
+          onPress={() => setModalVisible(false)}
         >
           <TouchableOpacity 
             style={styles.modalContent}
@@ -160,7 +201,7 @@ const CreatePinScreen = () => {
               <IconButton
                 icon={() => <MaterialCommunityIcons name="close" size={24} color="#FFFFFF" />}
                 size={24}
-                onPress={closeModal}
+                onPress={() => setModalVisible(false)}
                 style={styles.closeButton}
               />
             </View>
@@ -207,47 +248,22 @@ const CreatePinScreen = () => {
                 activeOutlineColor="#FFFFFF"
               />
 
-              <TextInput
-                mode="outlined"
-                label="Board"
-                value={boards.find(b => b._id === formData.boardId)?.name || ''}
+              <TouchableOpacity
                 onPress={() => {
                   if (boards.length === 0) {
                     navigation.navigate('CreateBoard');
                     return;
                   }
-                  console.log('Opening SelectBoard with boards:', boards);
-                  console.log('Current formData:', formData);
-                  navigation.navigate('SelectBoard', {
-                    boards,
-                    selectedBoardId: formData.boardId,
-                    onSelect: (boardId) => {
-                      console.log('Selected board:', boardId);
-                      setFormData(prevData => {
-                        console.log('Updating formData with new boardId:', boardId);
-                        return { ...prevData, boardId };
-                      });
-                    },
-                  });
+                  setSelectBoardModalVisible(true);
                 }}
-                editable={false}
-                right={<TextInput.Icon icon={() => <MaterialCommunityIcons name="chevron-down" size={24} color="#FFFFFF" />} />}
-                style={styles.input}
-                theme={{ colors: { text: '#FFFFFF', placeholder: '#666666' } }}
-                outlineColor="#333333"
-                activeOutlineColor="#FFFFFF"
-              />
-              {boards.length === 0 && (
-                <Button
-                  mode="outlined"
-                  onPress={() => navigation.navigate('CreateBoard')}
-                  style={styles.createBoardButton}
-                  textColor="#FFFFFF"
-                  icon={() => <MaterialCommunityIcons name="plus" size={24} color="#FFFFFF" />}
-                >
-                  Create New Board
-                </Button>
-              )}
+                style={styles.boardSelector}
+              >
+                <Text style={styles.boardSelectorLabel}>Board</Text>
+                <Text style={styles.boardSelectorValue}>
+                  {boards.find(b => b._id === formData.boardId)?.name || 'Select a board'}
+                </Text>
+                <MaterialCommunityIcons name="chevron-down" size={24} color="#FFFFFF" />
+              </TouchableOpacity>
 
               <Button
                 mode="contained"
@@ -262,6 +278,65 @@ const CreatePinScreen = () => {
             </ScrollView>
           </TouchableOpacity>
         </TouchableOpacity>
+
+        {/* Board Selection Modal */}
+        <Modal
+          animationType="slide"
+          transparent={true}
+          visible={selectBoardModalVisible}
+          onRequestClose={() => setSelectBoardModalVisible(false)}
+        >
+          <View style={styles.modalContainer}>
+            <TouchableOpacity 
+              style={styles.overlay} 
+              activeOpacity={1} 
+              onPress={() => setSelectBoardModalVisible(false)}
+            >
+              <View 
+                style={styles.boardSelectionModal}
+                onStartShouldSetResponder={() => true}
+              >
+                <View style={styles.modalHeader}>
+                  <Text variant="headlineSmall" style={styles.title}>
+                    Select Board
+                  </Text>
+                  <IconButton
+                    icon={() => <MaterialCommunityIcons name="close" size={24} color="#FFFFFF" />}
+                    size={24}
+                    onPress={() => setSelectBoardModalVisible(false)}
+                    style={styles.closeButton}
+                  />
+                </View>
+                <FlatList
+                  data={boards}
+                  renderItem={renderBoard}
+                  keyExtractor={(item) => item._id}
+                  numColumns={2}
+                  contentContainerStyle={styles.boardList}
+                  showsVerticalScrollIndicator={false}
+                />
+                {boards.length === 0 && (
+                  <View style={styles.emptyState}>
+                    <MaterialCommunityIcons name="folder-plus" size={48} color="#666666" />
+                    <Text style={styles.emptyStateText}>No boards yet</Text>
+                    <Button
+                      mode="contained"
+                      onPress={() => {
+                        setSelectBoardModalVisible(false);
+                        navigation.navigate('CreateBoard');
+                      }}
+                      style={styles.createBoardButton}
+                      buttonColor="#E60023"
+                      textColor="#FFFFFF"
+                    >
+                      Create Board
+                    </Button>
+                  </View>
+                )}
+              </View>
+            </TouchableOpacity>
+          </View>
+        </Modal>
       </View>
     </Modal>
   );
@@ -331,9 +406,91 @@ const styles = StyleSheet.create({
     marginTop: 8,
     marginBottom: 16,
   },
-  createBoardButton: {
-    marginTop: 8,
+  boardSelector: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#1A1A1A',
+    borderRadius: 12,
+    padding: 16,
     marginBottom: 16,
+    borderWidth: 1,
+    borderColor: '#333333',
+  },
+  boardSelectorLabel: {
+    color: '#666666',
+    marginRight: 8,
+    fontSize: 16,
+  },
+  boardSelectorValue: {
+    flex: 1,
+    color: '#FFFFFF',
+    fontSize: 16,
+  },
+  boardList: {
+    padding: 8,
+    paddingBottom: 24,
+  },
+  boardCard: {
+    width: (Dimensions.get('window').width - 32) / 2,
+    margin: 8,
+    backgroundColor: '#1A1A1A',
+    borderRadius: 16,
+    overflow: 'hidden',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+  },
+  selectedBoard: {
+    borderColor: '#E60023',
+    borderWidth: 2,
+    transform: [{ scale: 1.02 }],
+  },
+  boardContent: {
+    flex: 1,
+  },
+  boardImage: {
+    width: '100%',
+    height: (Dimensions.get('window').width - 32) / 2,
+    borderRadius: 16,
+  },
+  boardInfo: {
+    padding: 12,
+    backgroundColor: '#1A1A1A',
+  },
+  boardName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    marginBottom: 4,
+  },
+  pinCount: {
+    fontSize: 14,
+    color: '#666666',
+  },
+  boardSelectionModal: {
+    backgroundColor: '#1A1A1A',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    maxHeight: '90%',
+    marginTop: 'auto',
+  },
+  emptyState: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 24,
+  },
+  emptyStateText: {
+    color: '#666666',
+    fontSize: 16,
+    marginTop: 16,
+    marginBottom: 24,
+  },
+  createBoardButton: {
+    width: '100%',
+    marginTop: 8,
   },
 });
 

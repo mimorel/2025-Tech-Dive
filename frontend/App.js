@@ -117,10 +117,7 @@ export default function App() {
             component={SelectBoardScreen}
             options={{ 
               title: 'Select Board',
-              presentation: 'transparentModal',
-              animation: 'slide_from_bottom',
-              headerShown: false,
-              contentStyle: { backgroundColor: 'transparent' }
+              headerShown: true
             }}
           />
         </Stack.Navigator>
