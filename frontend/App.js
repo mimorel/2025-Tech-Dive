@@ -19,6 +19,7 @@ import UserBoardsScreen from './screens/UserBoardsScreen';
 import UserPinsScreen from './screens/UserPinsScreen';
 import TrendingScreen from './screens/TrendingScreen';
 import EditBoardScreen from './screens/EditBoardScreen';
+import SelectBoardScreen from './screens/SelectBoardScreen';
 
 const Stack = createNativeStackNavigator();
 
@@ -30,9 +31,9 @@ export default function App() {
           initialRouteName="Login"
           screenOptions={{
             headerStyle: {
-              backgroundColor: '#ffffff',
+              backgroundColor: '#1A1A1A',
             },
-            headerTintColor: '#000000',
+            headerTintColor: '#FFFFFF',
             headerTitleStyle: {
               fontWeight: 'bold',
             },
@@ -111,9 +112,20 @@ export default function App() {
             component={EditBoardScreen}
             options={{ title: 'Edit Board' }}
           />
+          <Stack.Screen 
+            name="SelectBoard" 
+            component={SelectBoardScreen}
+            options={{ 
+              title: 'Select Board',
+              presentation: 'transparentModal',
+              animation: 'slide_from_bottom',
+              headerShown: false,
+              contentStyle: { backgroundColor: 'transparent' }
+            }}
+          />
         </Stack.Navigator>
       </NavigationContainer>
-      <StatusBar style="auto" />
+      <StatusBar style="light" />
     </PaperProvider>
   );
 } 

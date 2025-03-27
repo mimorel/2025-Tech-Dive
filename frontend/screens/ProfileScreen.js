@@ -76,7 +76,11 @@ const ProfileScreen = () => {
 
   useEffect(() => {
     fetchUserProfile();
-  }, []);
+    const unsubscribe = navigation.addListener('refreshProfile', () => {
+      fetchUserProfile();
+    });
+    return unsubscribe;
+  }, [navigation]);
 
   const onRefresh = () => {
     setRefreshing(true);

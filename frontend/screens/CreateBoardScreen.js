@@ -8,8 +8,8 @@ import {
 } from 'react-native';
 import { TextInput, Button, Text, Surface, HelperText } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as ImagePicker from 'expo-image-picker';
+import { getCurrentUser, dummyBoards } from '../data/dummyData';
 
 const CreateBoardScreen = () => {
   const navigation = useNavigation();
@@ -49,24 +49,32 @@ const CreateBoardScreen = () => {
     setError('');
 
     try {
-      const token = await AsyncStorage.getItem('token');
-      const response = await fetch('http://localhost:3000/api/boards', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(formData),
-      });
+      // Create new board with dummy data
+      const currentUser = getCurrentUser();
+      const newBoard = {
+        _id: `board_${Date.now()}`,
+        name: formData.name,
+        description: formData.description,
+        coverImage: formData.coverImage || 'https://via.placeholder.com/300',
+        isPrivate: formData.isPrivate,
+        author: currentUser,
+        collaborators: [],
+        pins: [],
+        followers: [],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+      };
 
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to create board');
-      }
-
+      console.log('Created dummy board:', newBoard);
+      
+      // Add the new board to the dummyBoards array
+      dummyBoards.push(newBoard);
+      
+      // Navigate back
       navigation.goBack();
     } catch (error) {
-      setError(error.message);
+      console.error('Error creating board:', error);
+      setError('Failed to create board. Please try again.');
     } finally {
       setLoading(false);
     }

@@ -1,13 +1,14 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import {
   View,
   StyleSheet,
   FlatList,
+  TouchableOpacity,
   Dimensions,
+  Image,
 } from 'react-native';
 import { Text, Surface, ActivityIndicator, FAB } from 'react-native-paper';
 import { useNavigation, useRoute } from '@react-navigation/native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const { width } = Dimensions.get('window');
 const numColumns = 2;
@@ -17,32 +18,51 @@ const SelectBoardScreen = () => {
   const navigation = useNavigation();
   const route = useRoute();
   const { boards, selectedBoardId, onSelect } = route.params;
-  const [loading, setLoading] = useState(false);
+
+  console.log('SelectBoardScreen mounted with:', { boards, selectedBoardId, onSelect });
 
   const handleSelect = (boardId) => {
-    onSelect(boardId);
-    navigation.goBack();
+    console.log('Handling board selection:', boardId);
+    if (onSelect) {
+      onSelect(boardId);
+      navigation.goBack();
+    } else {
+      console.error('No onSelect handler provided');
+    }
   };
 
   const renderBoard = ({ item }) => (
-    <Surface
+    <TouchableOpacity
+      onPress={() => handleSelect(item._id)}
       style={[
         styles.boardCard,
         selectedBoardId === item._id && styles.selectedBoard,
       ]}
-      onPress={() => handleSelect(item._id)}
     >
-      <Surface.Cover
-        source={{ uri: item.coverImage || 'https://via.placeholder.com/300' }}
-        style={styles.boardImage}
-      />
-      <Surface.Title
-        title={item.name}
-        subtitle={`${item.pins?.length || 0} pins`}
-        titleNumberOfLines={2}
-        style={styles.boardTitle}
-      />
-    </Surface>
+      <View style={styles.boardContent}>
+        <View style={styles.imageContainer}>
+          {item.coverImage ? (
+            <Image
+              source={{ uri: item.coverImage }}
+              style={styles.boardImage}
+              resizeMode="cover"
+            />
+          ) : (
+            <View style={styles.imagePlaceholder}>
+              <Text style={styles.placeholderText}>No Cover</Text>
+            </View>
+          )}
+        </View>
+        <View style={styles.boardInfo}>
+          <Text style={styles.boardName} numberOfLines={2}>
+            {item.name}
+          </Text>
+          <Text style={styles.pinCount}>
+            {item.pins?.length || 0} pins
+          </Text>
+        </View>
+      </View>
+    </TouchableOpacity>
   );
 
   return (
@@ -79,19 +99,21 @@ const SelectBoardScreen = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#f5f5f5',
+    backgroundColor: '#121212',
   },
   header: {
     padding: 16,
-    backgroundColor: '#fff',
-    elevation: 4,
+    backgroundColor: '#1A1A1A',
+    borderBottomWidth: 1,
+    borderBottomColor: '#333333',
   },
   title: {
     fontWeight: 'bold',
+    color: '#FFFFFF',
     marginBottom: 4,
   },
   subtitle: {
-    color: '#666',
+    color: '#666666',
   },
   list: {
     padding: 8,
@@ -99,28 +121,59 @@ const styles = StyleSheet.create({
   boardCard: {
     width: itemWidth,
     margin: 8,
-    elevation: 4,
+    backgroundColor: '#1A1A1A',
+    borderRadius: 12,
+    overflow: 'hidden',
   },
   selectedBoard: {
     borderColor: '#E60023',
     borderWidth: 2,
   },
-  boardImage: {
+  boardContent: {
+    flex: 1,
+  },
+  imageContainer: {
+    width: '100%',
     height: itemWidth,
   },
-  boardTitle: {
-    padding: 8,
+  boardImage: {
+    width: '100%',
+    height: '100%',
+  },
+  imagePlaceholder: {
+    width: '100%',
+    height: '100%',
+    backgroundColor: '#333333',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  placeholderText: {
+    color: '#666666',
+  },
+  boardInfo: {
+    padding: 12,
+  },
+  boardName: {
+    fontSize: 16,
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    marginBottom: 4,
+  },
+  pinCount: {
+    fontSize: 14,
+    color: '#666666',
   },
   emptyText: {
     textAlign: 'center',
     marginTop: 32,
-    color: '#666',
+    color: '#666666',
   },
   fab: {
     position: 'absolute',
     margin: 16,
     right: 0,
     bottom: 0,
+    backgroundColor: '#E60023',
   },
 });
 
