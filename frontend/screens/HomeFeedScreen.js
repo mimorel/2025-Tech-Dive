@@ -131,11 +131,19 @@ const HomeFeedScreen = () => {
           />
           <IconButton
             icon={({ size }) => (
+              <MaterialCommunityIcons name="cog" size={size} color="#fff" />
+            )}
+            size={24}
+            onPress={() => navigation.navigate('Settings')}
+            style={styles.iconButton}
+          />
+          <IconButton
+            icon={({ size }) => (
               <MaterialCommunityIcons name="account-circle" size={size} color="#fff" />
             )}
             size={24}
             onPress={() => navigation.navigate('Profile')}
-            style={styles.profileButton}
+            style={styles.iconButton}
           />
         </View>
       </View>
@@ -278,9 +286,9 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
   },
-  profileButton: {
+  iconButton: {
     margin: 0,
-    marginLeft: 8,
+    marginLeft: 4,
   },
 });
 
