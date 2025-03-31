@@ -7,7 +7,7 @@ import {
   RefreshControl,
   useWindowDimensions,
 } from 'react-native';
-import { Text, Card, ActivityIndicator, FAB, Searchbar, Chip, useTheme } from 'react-native-paper';
+import { Text, Card, ActivityIndicator, FAB, Searchbar, Chip, useTheme, IconButton } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import { dummyPins } from '../data/dummyData';
@@ -113,21 +113,31 @@ const HomeFeedScreen = () => {
   return (
     <View style={styles.container}>
       <View style={[styles.searchContainer, { backgroundColor: DARK_PURPLE_GREY }]}>
-        <Searchbar
-          placeholder="Search pins..."
-          onChangeText={setSearchQuery}
-          value={searchQuery}
-          style={[styles.searchBar, { backgroundColor: LIGHT_PURPLE_GREY }]}
-          iconColor="#fff"
-          placeholderTextColor="rgba(255, 255, 255, 0.6)"
-          inputStyle={{ color: '#fff' }}
-          icon={({ size }) => (
-            <MaterialCommunityIcons name="magnify" size={size} color="#fff" />
-          )}
-          clearIcon={({ size }) => (
-            <MaterialCommunityIcons name="close" size={size} color="#fff" />
-          )}
-        />
+        <View style={styles.searchHeader}>
+          <Searchbar
+            placeholder="Search pins..."
+            onChangeText={setSearchQuery}
+            value={searchQuery}
+            style={[styles.searchBar, { backgroundColor: LIGHT_PURPLE_GREY }]}
+            iconColor="#fff"
+            placeholderTextColor="rgba(255, 255, 255, 0.6)"
+            inputStyle={{ color: '#fff' }}
+            icon={({ size }) => (
+              <MaterialCommunityIcons name="magnify" size={size} color="#fff" />
+            )}
+            clearIcon={({ size }) => (
+              <MaterialCommunityIcons name="close" size={size} color="#fff" />
+            )}
+          />
+          <IconButton
+            icon={({ size }) => (
+              <MaterialCommunityIcons name="account-circle" size={size} color="#fff" />
+            )}
+            size={24}
+            onPress={() => navigation.navigate('Profile')}
+            style={styles.profileButton}
+          />
+        </View>
       </View>
       
       <View style={[styles.categoriesContainer, { backgroundColor: DARK_PURPLE_GREY }]}>
@@ -208,7 +218,13 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: 'rgba(255, 255, 255, 0.1)',
   },
+  searchHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 8,
+  },
   searchBar: {
+    flex: 1,
     elevation: 0,
     borderRadius: 8,
   },
@@ -261,6 +277,10 @@ const styles = StyleSheet.create({
     margin: 16,
     right: 0,
     bottom: 0,
+  },
+  profileButton: {
+    margin: 0,
+    marginLeft: 8,
   },
 });
 
