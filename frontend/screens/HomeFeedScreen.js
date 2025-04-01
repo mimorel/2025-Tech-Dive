@@ -10,7 +10,7 @@ import {
 import { Text, Card, ActivityIndicator, FAB, Searchbar, Chip, useTheme, IconButton } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { dummyPins } from '../data/dummyData';
+import { feedAPI } from '../services/api';
 
 const MIN_COLUMN_WIDTH = 150; // Minimum width for each column
 const GRID_PADDING = 8; // Padding around the grid
@@ -38,32 +38,58 @@ const HomeFeedScreen = () => {
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
+  const [isLoadingMore, setIsLoadingMore] = useState(false);
 
   // Calculate number of columns based on screen width
   const numColumns = Math.max(2, Math.floor((screenWidth - (GRID_PADDING * 2)) / MIN_COLUMN_WIDTH));
   const columnWidth = (screenWidth - (GRID_PADDING * 2) - (CARD_MARGIN * 2 * numColumns)) / numColumns;
 
-  const fetchPins = async () => {
+  const fetchPins = useCallback(async (pageNum = 1) => {
     try {
-      // Simulate API delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      setPins(dummyPins);
+      if (pageNum === 1) {
+        setLoading(true);
+      } else {
+        setIsLoadingMore(true);
+      }
+
+      const response = await feedAPI.getFeed(pageNum);
+      const newPins = response.pins;
+      
+      if (pageNum === 1) {
+        setPins(newPins);
+      } else {
+        setPins(prevPins => [...prevPins, ...newPins]);
+      }
+      
+      setHasMore(newPins.length === 20); // If we got less than 20 pins, we've reached the end
+      setPage(pageNum);
     } catch (error) {
       console.error('Error fetching pins:', error);
     } finally {
       setLoading(false);
       setRefreshing(false);
+      setIsLoadingMore(false);
     }
-  };
-
-  useEffect(() => {
-    fetchPins();
   }, []);
 
-  const onRefresh = () => {
+  useEffect(() => {
+    fetchPins(1);
+  }, [fetchPins]);
+
+  const onRefresh = useCallback(() => {
     setRefreshing(true);
-    fetchPins();
-  };
+    setPage(1);
+    setHasMore(true);
+    fetchPins(1);
+  }, [fetchPins]);
+
+  const loadMore = useCallback(() => {
+    if (!isLoadingMore && hasMore) {
+      fetchPins(page + 1);
+    }
+  }, [fetchPins, isLoadingMore, hasMore, page]);
 
   const filterPins = useCallback(() => {
     return pins.filter(pin => {
@@ -73,14 +99,13 @@ const HomeFeedScreen = () => {
       
       const category = CATEGORIES.find(cat => cat.id === selectedCategory);
       const matchesCategory = selectedCategory === 'all' ||
-        pin.title.includes(category.label) ||
-        pin.description.includes(category.label);
+        pin.category === category.label;
 
       return matchesSearch && matchesCategory;
     });
   }, [pins, searchQuery, selectedCategory]);
 
-  const renderPin = ({ item }) => (
+  const renderPin = useCallback(({ item }) => (
     <Card
       style={[styles.card, { width: columnWidth }]}
       onPress={() => navigation.navigate('PinDetail', { pinId: item._id })}
@@ -98,9 +123,9 @@ const HomeFeedScreen = () => {
         subtitleStyle={styles.cardSubtitle}
       />
     </Card>
-  );
+  ), [columnWidth, navigation]);
 
-  if (loading) {
+  if (loading && page === 1) {
     return (
       <View style={styles.loadingContainer}>
         <ActivityIndicator size="large" color={theme.colors.primary} />
@@ -197,10 +222,17 @@ const HomeFeedScreen = () => {
             colors={[theme.colors.primary]}
           />
         }
+        onEndReached={loadMore}
+        onEndReachedThreshold={0.5}
         ListEmptyComponent={
           <Text style={[styles.emptyText, { color: theme.colors.placeholder }]}>
             No pins found
           </Text>
+        }
+        ListFooterComponent={
+          isLoadingMore ? (
+            <ActivityIndicator size="small" color={theme.colors.primary} style={styles.footerLoader} />
+          ) : null
         }
       />
       <FAB
@@ -249,16 +281,12 @@ const styles = StyleSheet.create({
   categoryChip: {
     marginRight: 8,
   },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
   list: {
-    alignItems: 'flex-start',
+    paddingBottom: 16,
   },
   columnWrapper: {
-    justifyContent: 'flex-start',
+    justifyContent: 'space-between',
+    marginBottom: CARD_MARGIN * 2,
   },
   card: {
     margin: CARD_MARGIN,
@@ -269,16 +297,11 @@ const styles = StyleSheet.create({
     borderTopRightRadius: 8,
   },
   cardTitle: {
-    fontSize: 12,
-    lineHeight: 16,
+    fontSize: 14,
+    fontWeight: 'bold',
   },
   cardSubtitle: {
-    fontSize: 10,
-    lineHeight: 14,
-  },
-  emptyText: {
-    textAlign: 'center',
-    marginTop: 32,
+    fontSize: 12,
   },
   fab: {
     position: 'absolute',
@@ -286,9 +309,21 @@ const styles = StyleSheet.create({
     right: 0,
     bottom: 0,
   },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  emptyText: {
+    textAlign: 'center',
+    marginTop: 32,
+    fontSize: 16,
+  },
+  footerLoader: {
+    marginVertical: 16,
+  },
   iconButton: {
-    margin: 0,
-    marginLeft: 4,
+    marginLeft: 8,
   },
 });
 

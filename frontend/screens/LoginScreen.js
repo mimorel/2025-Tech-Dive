@@ -21,6 +21,7 @@ const LoginScreen = ({ navigation }) => {
     setLoading(true);
 
     try {
+      console.log('Attempting login with:', { email: formData.email });
       const response = await fetch(`${config.API_URL}/auth/login`, {
         method: 'POST',
         headers: { 
@@ -31,15 +32,21 @@ const LoginScreen = ({ navigation }) => {
       });
 
       const data = await response.json();
+      console.log('Login response:', { status: response.status, data });
       
       if (!response.ok) {
         throw new Error(data.message || 'Login failed');
+      }
+
+      if (!data.token || !data.user) {
+        throw new Error('Invalid response from server');
       }
 
       // Store the token and user data
       await AsyncStorage.setItem('token', data.token);
       await AsyncStorage.setItem('user', JSON.stringify(data.user));
       
+      console.log('Login successful, navigating to HomeFeed');
       // Navigate to home feed
       navigation.replace('HomeFeed');
     } catch (err) {

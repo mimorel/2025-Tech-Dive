@@ -96,7 +96,21 @@ router.post('/login', async (req, res) => {
           throw err;
         }
         console.log('Login successful for user:', email);
-        res.json({ token });
+        // Send both token and user data
+        res.json({ 
+          token,
+          user: {
+            id: user._id,
+            username: user.username,
+            email: user.email,
+            fullName: user.fullName,
+            bio: user.bio,
+            avatar: user.avatar,
+            location: user.location,
+            website: user.website,
+            settings: user.settings
+          }
+        });
       }
     );
   } catch (error) {
