@@ -1,0 +1,446 @@
+{
+  "info": {
+    "name": "Pinterest Clone API",
+    "description": "API collection for Pinterest Clone application",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "register"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"username\": \"testuser\",\n    \"email\": \"test@example.com\",\n    \"password\": \"password123\",\n    \"fullName\": \"Test User\",\n    \"bio\": \"Test user bio\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "login"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"email\": \"nature@example.com\",\n    \"password\": \"password123\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Current User",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-auth-token",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "me"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Get All Users",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-auth-token",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users"]
+            }
+          }
+        },
+        {
+          "name": "Get User by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-auth-token",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "user_id_here"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update User",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "x-auth-token",
+                "value": "{{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "user_id_here"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"fullName\": \"Updated Name\",\n    \"bio\": \"Updated bio\"\n}"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Boards",
+      "item": [
+        {
+          "name": "Get All Boards",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-auth-token",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/boards",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "boards"]
+            }
+          }
+        },
+        {
+          "name": "Create Board",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-auth-token",
+                "value": "{{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/boards",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "boards"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"New Board\",\n    \"description\": \"Board description\",\n    \"privacy\": \"public\",\n    \"category\": \"Art & Design\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Board by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-auth-token",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/boards/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "boards", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "board_id_here"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Board",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "x-auth-token",
+                "value": "{{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/boards/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "boards", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "board_id_here"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"name\": \"Updated Board Name\",\n    \"description\": \"Updated description\",\n    \"privacy\": \"private\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Board",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "x-auth-token",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/boards/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "boards", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "board_id_here"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Pins",
+      "item": [
+        {
+          "name": "Get All Pins",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-auth-token",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/pins",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "pins"]
+            }
+          }
+        },
+        {
+          "name": "Create Pin",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "x-auth-token",
+                "value": "{{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/pins",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "pins"]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"title\": \"New Pin\",\n    \"description\": \"Pin description\",\n    \"imageUrl\": \"https://example.com/image.jpg\",\n    \"link\": \"https://example.com\",\n    \"tags\": [\"tag1\", \"tag2\"],\n    \"boardId\": \"board_id_here\"\n}"
+            }
+          }
+        },
+        {
+          "name": "Get Pin by ID",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-auth-token",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/pins/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "pins", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "pin_id_here"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Update Pin",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "x-auth-token",
+                "value": "{{token}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/pins/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "pins", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "pin_id_here"
+                }
+              ]
+            },
+            "body": {
+              "mode": "raw",
+              "raw": "{\n    \"title\": \"Updated Pin Title\",\n    \"description\": \"Updated description\",\n    \"tags\": [\"updated\", \"tags\"]\n}"
+            }
+          }
+        },
+        {
+          "name": "Delete Pin",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "x-auth-token",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/pins/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "pins", ":id"],
+              "variable": [
+                {
+                  "key": "id",
+                  "value": "pin_id_here"
+                }
+              ]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Feed",
+      "item": [
+        {
+          "name": "Get Feed",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-auth-token",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/feed",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "feed"]
+            }
+          }
+        },
+        {
+          "name": "Get Trending Pins",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "x-auth-token",
+                "value": "{{token}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/feed/trending",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "feed", "trending"]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:5000"
+    },
+    {
+      "key": "token",
+      "value": "your_jwt_token_here"
+    }
+  ]
+} 

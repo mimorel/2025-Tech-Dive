@@ -1,0 +1,104 @@
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-03-31T22:40:40.093Z"}
+{"errorLabelSet":{},"level":"error","message":"MongoDB connection error: options usecreateindex, usefindandmodify are not supported","stack":"MongoParseError: options usecreateindex, usefindandmodify are not supported\n    at parseOptions (/Users/bertrand.saint-pruex/Documents/code/tech.dive-pinterest/backend/node_modules/mongodb/lib/connection_string.js:278:15)\n    at new MongoClient (/Users/bertrand.saint-pruex/Documents/code/tech.dive-pinterest/backend/node_modules/mongodb/lib/mongo_client.js:52:61)\n    at NativeConnection.createClient (/Users/bertrand.saint-pruex/Documents/code/tech.dive-pinterest/backend/node_modules/mongoose/lib/drivers/node-mongodb-native/connection.js:328:14)\n    at NativeConnection.openUri (/Users/bertrand.saint-pruex/Documents/code/tech.dive-pinterest/backend/node_modules/mongoose/lib/connection.js:1071:34)\n    at Mongoose.connect (/Users/bertrand.saint-pruex/Documents/code/tech.dive-pinterest/backend/node_modules/mongoose/lib/mongoose.js:450:15)\n    at Object.<anonymous> (/Users/bertrand.saint-pruex/Documents/code/tech.dive-pinterest/backend/app.js:41:10)\n    at Module._compile (node:internal/modules/cjs/loader:1734:14)\n    at Object..js (node:internal/modules/cjs/loader:1899:10)\n    at Module.load (node:internal/modules/cjs/loader:1469:32)\n    at Function._load (node:internal/modules/cjs/loader:1286:12)","timestamp":"2025-03-31T22:40:40.097Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-03-31T22:40:49.999Z"}
+{"errorLabelSet":{},"level":"error","message":"MongoDB connection error: options usecreateindex, usefindandmodify are not supported","stack":"MongoParseError: options usecreateindex, usefindandmodify are not supported\n    at parseOptions (/Users/bertrand.saint-pruex/Documents/code/tech.dive-pinterest/backend/node_modules/mongodb/lib/connection_string.js:278:15)\n    at new MongoClient (/Users/bertrand.saint-pruex/Documents/code/tech.dive-pinterest/backend/node_modules/mongodb/lib/mongo_client.js:52:61)\n    at NativeConnection.createClient (/Users/bertrand.saint-pruex/Documents/code/tech.dive-pinterest/backend/node_modules/mongoose/lib/drivers/node-mongodb-native/connection.js:328:14)\n    at NativeConnection.openUri (/Users/bertrand.saint-pruex/Documents/code/tech.dive-pinterest/backend/node_modules/mongoose/lib/connection.js:1071:34)\n    at Mongoose.connect (/Users/bertrand.saint-pruex/Documents/code/tech.dive-pinterest/backend/node_modules/mongoose/lib/mongoose.js:450:15)\n    at Object.<anonymous> (/Users/bertrand.saint-pruex/Documents/code/tech.dive-pinterest/backend/app.js:41:10)\n    at Module._compile (node:internal/modules/cjs/loader:1734:14)\n    at Object..js (node:internal/modules/cjs/loader:1899:10)\n    at Module.load (node:internal/modules/cjs/loader:1469:32)\n    at Function._load (node:internal/modules/cjs/loader:1286:12)","timestamp":"2025-03-31T22:40:50.003Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-03-31T22:41:01.265Z"}
+{"errorLabelSet":{},"level":"error","message":"MongoDB connection error: options usecreateindex, usefindandmodify are not supported","stack":"MongoParseError: options usecreateindex, usefindandmodify are not supported\n    at parseOptions (/Users/bertrand.saint-pruex/Documents/code/tech.dive-pinterest/backend/node_modules/mongodb/lib/connection_string.js:278:15)\n    at new MongoClient (/Users/bertrand.saint-pruex/Documents/code/tech.dive-pinterest/backend/node_modules/mongodb/lib/mongo_client.js:52:61)\n    at NativeConnection.createClient (/Users/bertrand.saint-pruex/Documents/code/tech.dive-pinterest/backend/node_modules/mongoose/lib/drivers/node-mongodb-native/connection.js:328:14)\n    at NativeConnection.openUri (/Users/bertrand.saint-pruex/Documents/code/tech.dive-pinterest/backend/node_modules/mongoose/lib/connection.js:1071:34)\n    at Mongoose.connect (/Users/bertrand.saint-pruex/Documents/code/tech.dive-pinterest/backend/node_modules/mongoose/lib/mongoose.js:450:15)\n    at Object.<anonymous> (/Users/bertrand.saint-pruex/Documents/code/tech.dive-pinterest/backend/app.js:41:10)\n    at Module._compile (node:internal/modules/cjs/loader:1734:14)\n    at Object..js (node:internal/modules/cjs/loader:1899:10)\n    at Module.load (node:internal/modules/cjs/loader:1469:32)\n    at Function._load (node:internal/modules/cjs/loader:1286:12)","timestamp":"2025-03-31T22:41:01.270Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-03-31T22:41:11.103Z"}
+{"errorLabelSet":{},"level":"error","message":"MongoDB connection error: options usecreateindex, usefindandmodify are not supported","stack":"MongoParseError: options usecreateindex, usefindandmodify are not supported\n    at parseOptions (/Users/bertrand.saint-pruex/Documents/code/tech.dive-pinterest/backend/node_modules/mongodb/lib/connection_string.js:278:15)\n    at new MongoClient (/Users/bertrand.saint-pruex/Documents/code/tech.dive-pinterest/backend/node_modules/mongodb/lib/mongo_client.js:52:61)\n    at NativeConnection.createClient (/Users/bertrand.saint-pruex/Documents/code/tech.dive-pinterest/backend/node_modules/mongoose/lib/drivers/node-mongodb-native/connection.js:328:14)\n    at NativeConnection.openUri (/Users/bertrand.saint-pruex/Documents/code/tech.dive-pinterest/backend/node_modules/mongoose/lib/connection.js:1071:34)\n    at Mongoose.connect (/Users/bertrand.saint-pruex/Documents/code/tech.dive-pinterest/backend/node_modules/mongoose/lib/mongoose.js:450:15)\n    at Object.<anonymous> (/Users/bertrand.saint-pruex/Documents/code/tech.dive-pinterest/backend/app.js:41:10)\n    at Module._compile (node:internal/modules/cjs/loader:1734:14)\n    at Object..js (node:internal/modules/cjs/loader:1899:10)\n    at Module.load (node:internal/modules/cjs/loader:1469:32)\n    at Function._load (node:internal/modules/cjs/loader:1286:12)","timestamp":"2025-03-31T22:41:11.107Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-03-31T22:42:03.789Z"}
+{"errorLabelSet":{},"level":"error","message":"MongoDB connection error: options usecreateindex, usefindandmodify are not supported","stack":"MongoParseError: options usecreateindex, usefindandmodify are not supported\n    at parseOptions (/Users/bertrand.saint-pruex/Documents/code/tech.dive-pinterest/backend/node_modules/mongodb/lib/connection_string.js:278:15)\n    at new MongoClient (/Users/bertrand.saint-pruex/Documents/code/tech.dive-pinterest/backend/node_modules/mongodb/lib/mongo_client.js:52:61)\n    at NativeConnection.createClient (/Users/bertrand.saint-pruex/Documents/code/tech.dive-pinterest/backend/node_modules/mongoose/lib/drivers/node-mongodb-native/connection.js:328:14)\n    at NativeConnection.openUri (/Users/bertrand.saint-pruex/Documents/code/tech.dive-pinterest/backend/node_modules/mongoose/lib/connection.js:1071:34)\n    at Mongoose.connect (/Users/bertrand.saint-pruex/Documents/code/tech.dive-pinterest/backend/node_modules/mongoose/lib/mongoose.js:450:15)\n    at Object.<anonymous> (/Users/bertrand.saint-pruex/Documents/code/tech.dive-pinterest/backend/app.js:41:10)\n    at Module._compile (node:internal/modules/cjs/loader:1734:14)\n    at Object..js (node:internal/modules/cjs/loader:1899:10)\n    at Module.load (node:internal/modules/cjs/loader:1469:32)\n    at Function._load (node:internal/modules/cjs/loader:1286:12)","timestamp":"2025-03-31T22:42:03.793Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-04-01T00:44:38.354Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-04-01T00:44:39.652Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-04-01T00:46:16.871Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-04-01T00:46:18.011Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-04-01T00:46:50.588Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-04-01T00:46:51.512Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-04-01T00:47:53.659Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-04-01T00:47:54.797Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-04-01T00:48:04.088Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-04-01T00:48:05.014Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-04-01T00:53:19.430Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-04-01T00:53:19.430Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-04-01T00:53:20.503Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-04-01T00:53:20.503Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-04-01T00:53:32.024Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-04-01T00:53:32.024Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-04-01T00:53:32.945Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-04-01T00:53:32.979Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-04-01T00:59:27.743Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-04-01T00:59:27.743Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-04-01T00:59:28.728Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-04-01T00:59:28.756Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-04-01T00:59:32.983Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-04-01T00:59:32.983Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-04-01T00:59:34.578Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-04-01T00:59:34.579Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-04-01T00:59:35.473Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-04-01T00:59:35.505Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-04-01T00:59:49.733Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-04-01T00:59:49.734Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-04-01T00:59:50.732Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-04-01T00:59:50.734Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-04-01T01:00:05.891Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-04-01T01:00:06.804Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-04-01T01:00:53.506Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-04-01T01:00:53.504Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-04-01T01:00:53.508Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-04-01T01:00:55.109Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-04-01T01:00:55.111Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-04-01T01:00:55.114Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-04-01T01:00:56.071Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-04-01T01:00:56.071Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-04-01T01:00:56.071Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-04-01T01:02:20.614Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-04-01T01:02:20.614Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-04-01T01:02:20.614Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-04-01T01:02:22.273Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-04-01T01:02:22.276Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-04-01T01:02:22.277Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-04-01T01:02:23.247Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-04-01T01:02:23.247Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-04-01T01:02:23.247Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-04-01T01:02:32.610Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-04-01T01:02:33.544Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-04-01T01:03:49.235Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-04-01T01:03:50.392Z"}
+{"level":"info","message":"Server running on port 5000","timestamp":"2025-04-01T01:03:58.704Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-04-01T01:03:59.587Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-04-01T03:02:15.863Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-04-01T03:02:16.770Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-04-01T03:02:24.689Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-04-01T03:02:25.647Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-04-01T03:03:59.104Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-04-01T03:04:00.197Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-04-01T03:04:05.647Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-04-01T03:04:06.591Z"}
+{"level":"info","message":"::1 - - [01/Apr/2025:03:04:13 +0000] \"GET /test HTTP/1.1\" 500 1444 \"-\" \"PostmanRuntime/7.43.2\"","timestamp":"2025-04-01T03:04:13.899Z"}
+{"level":"info","message":"::1 - - [01/Apr/2025:03:04:17 +0000] \"GET /test HTTP/1.1\" 500 1444 \"-\" \"PostmanRuntime/7.43.2\"","timestamp":"2025-04-01T03:04:17.036Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-04-01T03:05:23.533Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-04-01T03:05:24.559Z"}
+{"level":"info","message":"::1 - - [01/Apr/2025:03:05:26 +0000] \"GET /test HTTP/1.1\" 500 1444 \"-\" \"PostmanRuntime/7.43.2\"","timestamp":"2025-04-01T03:05:26.761Z"}
+{"level":"info","message":"::1 - - [01/Apr/2025:03:05:28 +0000] \"GET /test HTTP/1.1\" 500 1444 \"-\" \"PostmanRuntime/7.43.2\"","timestamp":"2025-04-01T03:05:28.785Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-04-01T03:05:53.974Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-04-01T03:05:54.888Z"}
+{"level":"info","message":"::1 - - [01/Apr/2025:03:06:01 +0000] \"GET /test HTTP/1.1\" 500 1444 \"-\" \"PostmanRuntime/7.43.2\"","timestamp":"2025-04-01T03:06:01.362Z"}
+{"level":"info","message":"::1 - - [01/Apr/2025:03:06:13 +0000] \"GET /test HTTP/1.1\" 500 1444 \"-\" \"PostmanRuntime/7.43.2\"","timestamp":"2025-04-01T03:06:13.981Z"}
+{"level":"info","message":"::1 - - [01/Apr/2025:03:06:42 +0000] \"GET /test HTTP/1.1\" 500 1444 \"-\" \"PostmanRuntime/7.43.2\"","timestamp":"2025-04-01T03:06:42.169Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-04-01T03:06:59.247Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-04-01T03:07:00.263Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-04-01T03:07:13.620Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-04-01T03:07:14.554Z"}
+{"level":"info","message":"::1 - - [01/Apr/2025:03:07:16 +0000] \"GET /test HTTP/1.1\" 200 97 \"-\" \"PostmanRuntime/7.43.2\"","timestamp":"2025-04-01T03:07:16.103Z"}
+{"level":"info","message":"::1 - - [01/Apr/2025:03:07:19 +0000] \"GET /test HTTP/1.1\" 200 97 \"-\" \"PostmanRuntime/7.43.2\"","timestamp":"2025-04-01T03:07:19.309Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-04-01T03:08:15.960Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-04-01T03:08:17.116Z"}
+{"level":"info","message":"::1 - - [01/Apr/2025:03:11:28 +0000] \"GET /test HTTP/1.1\" 500 1400 \"-\" \"PostmanRuntime/7.43.2\"","timestamp":"2025-04-01T03:11:28.175Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-04-01T03:12:20.787Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-04-01T03:12:21.829Z"}
+{"level":"info","message":"::1 - - [01/Apr/2025:03:12:24 +0000] \"GET /test HTTP/1.1\" 500 1490 \"-\" \"PostmanRuntime/7.43.2\"","timestamp":"2025-04-01T03:12:24.133Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-04-01T03:13:10.823Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-04-01T03:13:11.786Z"}
+{"level":"info","message":"::1 - - [01/Apr/2025:03:13:14 +0000] \"GET /test HTTP/1.1\" 200 97 \"-\" \"PostmanRuntime/7.43.2\"","timestamp":"2025-04-01T03:13:14.082Z"}
+{"level":"info","message":"Server running on port 3000","timestamp":"2025-04-01T03:13:35.010Z"}
+{"level":"info","message":"MongoDB connected","timestamp":"2025-04-01T03:13:36.025Z"}
