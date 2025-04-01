@@ -18,9 +18,6 @@ const LoginScreen = ({ navigation }) => {
   const { login } = useAuth();
 
   const handleSubmit = async () => {
-    setError('');
-    setLoading(true);
-
     try {
       // Clean up the password by removing any prefixes
       const cleanPassword = formData.password.replace(/^Password:\s*/i, '');

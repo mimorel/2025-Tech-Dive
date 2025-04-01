@@ -1,5 +1,55 @@
 const mongoose = require('mongoose');
 
+const settingsSchema = new mongoose.Schema({
+  darkMode: {
+    type: Boolean,
+    default: false,
+  },
+  gridSize: {
+    type: String,
+    enum: ['small', 'medium', 'large'],
+    default: 'medium',
+  },
+  notifications: {
+    type: Boolean,
+    default: true,
+  },
+  emailNotifications: {
+    type: Boolean,
+    default: true,
+  },
+  privacy: {
+    profileVisibility: {
+      type: String,
+      enum: ['public', 'private'],
+      default: 'public',
+    },
+    showEmail: {
+      type: Boolean,
+      default: false,
+    },
+    showLocation: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  data: {
+    autoSave: {
+      type: Boolean,
+      default: true,
+    },
+    saveToGallery: {
+      type: Boolean,
+      default: true,
+    },
+    cacheSize: {
+      type: String,
+      enum: ['small', 'medium', 'large'],
+      default: 'medium',
+    },
+  },
+});
+
 const userSchema = new mongoose.Schema({
   username: {
     type: String,

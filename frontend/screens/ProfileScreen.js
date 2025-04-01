@@ -7,6 +7,7 @@ import {
   RefreshControl,
   Dimensions,
   TouchableOpacity,
+  Alert,
 } from 'react-native';
 import {
   Text,
@@ -20,19 +21,19 @@ import {
   Menu,
   Portal,
   Dialog,
+  Avatar,
 } from 'react-native-paper';
 import { useNavigation, useRoute } from '@react-navigation/native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { dummyPins } from '../data/dummyData';
+import { authAPI, pinsAPI, boardsAPI } from '../services/api';
 
 const { width } = Dimensions.get('window');
 const numColumns = 3;
 const pinSize = width / numColumns - 8;
 
-const ProfileScreen = () => {
+const ProfileScreen = ({ navigation }) => {
   const theme = useTheme();
-  const navigation = useNavigation();
   const route = useRoute();
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -42,32 +43,129 @@ const ProfileScreen = () => {
   const [selectedView, setSelectedView] = useState('pins'); // 'pins' or 'boards'
   const [userPins, setUserPins] = useState([]);
   const [userBoards, setUserBoards] = useState([]);
+  const [stats, setStats] = useState({
+    pins: 0,
+    boards: 0,
+    followers: 0,
+    following: 0
+  });
+  const [error, setError] = useState(null);
 
   const fetchUserProfile = async () => {
     try {
+      console.log('Starting to fetch user profile...');
       setLoading(true);
-      // For now, using dummy data
-      const dummyUser = {
-        _id: 'testuser123',
-        username: 'John Doe',
-        email: 'john@example.com',
-        bio: 'Pinterest enthusiast | Digital Creator | Love sharing beautiful things',
-        avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80',
-        followers: Array(128).fill('dummy_follower'),
-        following: Array(97).fill('dummy_following'),
-        pins: dummyPins.slice(0, 15),
-        boards: [
-          { _id: 'board1', name: 'Travel Inspiration', pins: Array(24).fill('pin'), coverImage: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80' },
-          { _id: 'board2', name: 'Food & Recipes', pins: Array(16).fill('pin'), coverImage: 'https://images.unsplash.com/photo-1504674900247-0877df9cc836?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80' },
-          { _id: 'board3', name: 'Interior Design', pins: Array(32).fill('pin'), coverImage: 'https://images.unsplash.com/photo-1493809842364-78817add7ffb?ixlib=rb-1.2.1&auto=format&fit=crop&w=800&q=80' },
-        ],
+      setError(null);
+      
+      // Get stored user data
+      const storedUserData = await AsyncStorage.getItem('userData');
+      console.log('Retrieved stored user data:', storedUserData);
+      
+      let userData;
+      if (storedUserData) {
+        try {
+          userData = JSON.parse(storedUserData);
+          console.log('Successfully parsed user data:', userData);
+        } catch (parseError) {
+          console.error('Error parsing stored user data:', parseError);
+          userData = null;
+        }
+      }
+
+      if (!userData) {
+        console.log('No stored user data, fetching from API...');
+        try {
+          userData = await authAPI.getCurrentUser();
+          console.log('=== RAW USER DATA FROM API ===');
+          console.log(JSON.stringify(userData, null, 2));
+          console.log('=== USER DATA KEYS ===');
+          console.log(Object.keys(userData));
+          console.log('=== FOLLOWERS DATA ===');
+          console.log('Followers array:', userData.followers);
+          console.log('Followers type:', typeof userData.followers);
+          console.log('Is followers array?', Array.isArray(userData.followers));
+          console.log('=== FOLLOWING DATA ===');
+          console.log('Following array:', userData.following);
+          console.log('Following type:', typeof userData.following);
+          console.log('Is following array?', Array.isArray(userData.following));
+        } catch (apiError) {
+          console.error('Error fetching current user:', apiError);
+          throw new Error('Failed to fetch user data from API');
+        }
+      }
+
+      if (!userData) {
+        throw new Error('No user data available');
+      }
+
+      // Ensure we have all required user fields
+      const completeUserData = {
+        ...userData,
+        name: userData.name || 'User',
+        title: userData.title || '',
+        bio: userData.bio || '',
+        followers: userData.followers || [],
+        following: userData.following || []
       };
 
-      setUser(dummyUser);
-      setUserPins(dummyUser.pins);
-      setUserBoards(dummyUser.boards);
+      console.log('=== COMPLETE USER DATA ===');
+      console.log(JSON.stringify(completeUserData, null, 2));
+      console.log('=== FOLLOWERS AND FOLLOWING IN COMPLETE DATA ===');
+      console.log('Followers:', completeUserData.followers);
+      console.log('Following:', completeUserData.following);
+      
+      setUser(completeUserData);
+      
+      // Fetch user's pins
+      console.log('=== FETCHING USER PINS ===');
+      const pinsResponse = await pinsAPI.getAllPins();
+      console.log('Pins response:', JSON.stringify(pinsResponse, null, 2));
+      const userPins = pinsResponse.pins.filter(pin => {
+        console.log('Checking pin:', JSON.stringify(pin, null, 2));
+        console.log('Pin user ID:', pin.user._id);
+        console.log('Current user ID:', userData.id);
+        return pin.user._id === userData.id;
+      });
+      console.log('Filtered user pins:', JSON.stringify(userPins, null, 2));
+      setUserPins(userPins);
+      
+      // Fetch user's boards
+      console.log('=== FETCHING USER BOARDS ===');
+      const boardsResponse = await boardsAPI.getAllBoards();
+      console.log('Boards response:', JSON.stringify(boardsResponse, null, 2));
+      const userBoards = boardsResponse.boards.filter(board => board.user._id === userData.id);
+      console.log('Filtered user boards:', JSON.stringify(userBoards, null, 2));
+      setUserBoards(userBoards);
+      
+      // Update stats with proper follower/following counts
+      console.log('=== CALCULATING STATS ===');
+      console.log('User followers:', JSON.stringify(completeUserData.followers, null, 2));
+      console.log('User following:', JSON.stringify(completeUserData.following, null, 2));
+      
+      // Get follower and following counts from the user data
+      const followersCount = Array.isArray(completeUserData.followers) ? completeUserData.followers.length : 0;
+      const followingCount = Array.isArray(completeUserData.following) ? completeUserData.following.length : 0;
+      
+      console.log('Followers count:', followersCount);
+      console.log('Following count:', followingCount);
+      
+      const finalStats = {
+        pins: userPins.length,
+        boards: userBoards.length,
+        followers: followersCount,
+        following: followingCount
+      };
+      
+      console.log('=== FINAL STATS ===');
+      console.log(JSON.stringify(finalStats, null, 2));
+      
+      setStats(finalStats);
+
+      console.log('=== PROFILE DATA LOADED ===');
     } catch (error) {
-      console.error('Error fetching user profile:', error);
+      console.error('Error in fetchUserProfile:', error);
+      setError(error.message);
+      Alert.alert('Error', 'Failed to load profile data: ' + error.message);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -75,40 +173,50 @@ const ProfileScreen = () => {
   };
 
   useEffect(() => {
+    console.log('ProfileScreen mounted, fetching profile...');
     fetchUserProfile();
-    const unsubscribe = navigation.addListener('refreshProfile', () => {
-      fetchUserProfile();
-    });
-    return unsubscribe;
-  }, [navigation]);
+  }, []);
 
-  const onRefresh = () => {
+  const onRefresh = async () => {
+    console.log('Refreshing profile...');
     setRefreshing(true);
-    fetchUserProfile();
+    await fetchUserProfile();
   };
 
   const handleLogout = async () => {
     try {
       await AsyncStorage.removeItem('token');
+      await AsyncStorage.removeItem('userData');
       navigation.replace('Login');
     } catch (error) {
       console.error('Error logging out:', error);
     }
   };
 
-  const renderPin = (pin) => (
-    <TouchableOpacity
-      key={pin._id}
-      style={styles.pinContainer}
-      onPress={() => navigation.navigate('PinDetail', { pinId: pin._id })}
-    >
-      <Image
-        source={{ uri: pin.imageUrl }}
-        style={styles.pinImage}
-        resizeMode="cover"
-      />
-    </TouchableOpacity>
-  );
+  const renderPin = (pin) => {
+    console.log('Rendering pin:', JSON.stringify(pin, null, 2));
+    return (
+      <TouchableOpacity
+        key={pin._id}
+        style={styles.pinCard}
+        onPress={() => navigation.navigate('PinDetail', { pinId: pin._id })}
+      >
+        <Image
+          source={{ uri: pin.imageUrl }}
+          style={styles.pinImage}
+          resizeMode="cover"
+        />
+        <View style={styles.pinInfo}>
+          <Text variant="titleMedium" style={styles.pinTitle} numberOfLines={2}>
+            {pin.title}
+          </Text>
+          <Text variant="bodySmall" style={styles.pinDescription} numberOfLines={2}>
+            {pin.description}
+          </Text>
+        </View>
+      </TouchableOpacity>
+    );
+  };
 
   const renderBoard = (board) => (
     <TouchableOpacity
@@ -133,6 +241,7 @@ const ProfileScreen = () => {
   );
 
   if (loading) {
+    console.log('Rendering loading state...');
     return (
       <View style={[styles.loadingContainer, { backgroundColor: '#121212' }]}>
         <ActivityIndicator size="large" color="#9C27B0" />
@@ -140,9 +249,31 @@ const ProfileScreen = () => {
     );
   }
 
+  if (error) {
+    console.log('Rendering error state:', error);
+    return (
+      <View style={[styles.container, styles.centerContent]}>
+        <Text>Error: {error}</Text>
+        <Button onPress={fetchUserProfile} style={styles.retryButton}>
+          Retry
+        </Button>
+      </View>
+    );
+  }
+
+  if (!user) {
+    console.log('Rendering no user state...');
+    return (
+      <View style={[styles.container, styles.centerContent]}>
+        <Text>No user data found</Text>
+      </View>
+    );
+  }
+
+  console.log('Rendering profile with user:', user);
   return (
     <View style={styles.container}>
-      <ScrollView
+      <ScrollView 
         style={styles.scrollView}
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
@@ -160,26 +291,25 @@ const ProfileScreen = () => {
             />
           </View>
 
-          <Image
-            source={{ uri: user?.avatar }}
+          <Avatar.Text 
+            size={80} 
+            label={user.name.split(' ').map(n => n[0]).join('')} 
             style={styles.avatar}
           />
-          <Text variant="headlineSmall" style={styles.username}>
-            {user?.username}
+          <Text variant="headlineSmall" style={styles.name}>
+            {user.name}
           </Text>
-          <Text variant="bodyLarge" style={styles.email}>
-            {user?.email}
+          <Text variant="titleMedium" style={styles.title}>
+            {user.title}
           </Text>
-          {user?.bio && (
-            <Text variant="bodyMedium" style={styles.bio}>
-              {user.bio}
-            </Text>
-          )}
+          <Text variant="bodyMedium" style={styles.bio}>
+            {user.bio}
+          </Text>
 
           <View style={styles.stats}>
             <TouchableOpacity style={styles.statItem}>
               <Text variant="titleLarge" style={styles.statNumber}>
-                {user?.pins?.length || 0}
+                {stats.pins}
               </Text>
               <Text variant="bodyMedium" style={styles.statLabel}>
                 Pins
@@ -187,15 +317,29 @@ const ProfileScreen = () => {
             </TouchableOpacity>
             <TouchableOpacity style={styles.statItem}>
               <Text variant="titleLarge" style={styles.statNumber}>
-                {user?.followers?.length || 0}
+                {stats.boards}
+              </Text>
+              <Text variant="bodyMedium" style={styles.statLabel}>
+                Boards
+              </Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.statItem}
+              onPress={() => navigation.navigate('Followers', { userId: user.id })}
+            >
+              <Text variant="titleLarge" style={styles.statNumber}>
+                {stats.followers}
               </Text>
               <Text variant="bodyMedium" style={styles.statLabel}>
                 Followers
               </Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.statItem}>
+            <TouchableOpacity 
+              style={styles.statItem}
+              onPress={() => navigation.navigate('Following', { userId: user.id })}
+            >
               <Text variant="titleLarge" style={styles.statNumber}>
-                {user?.following?.length || 0}
+                {stats.following}
               </Text>
               <Text variant="bodyMedium" style={styles.statLabel}>
                 Following
@@ -357,12 +501,12 @@ const styles = StyleSheet.create({
     borderRadius: 60,
     marginBottom: 16,
   },
-  username: {
+  name: {
     fontWeight: 'bold',
     marginBottom: 4,
     color: '#FFFFFF',
   },
-  email: {
+  title: {
     color: '#B0B0B0',
     marginBottom: 8,
   },
@@ -426,21 +570,42 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    padding: 4,
+    padding: 8,
   },
   pinsGrid: {
     flexDirection: 'row',
     flexWrap: 'wrap',
+    justifyContent: 'space-between',
   },
-  pinContainer: {
-    width: pinSize,
-    height: pinSize * 1.3,
-    margin: 4,
+  pinCard: {
+    width: (width - 32) / 2,
+    marginBottom: 16,
+    backgroundColor: '#2D2D2D',
+    borderRadius: 16,
+    overflow: 'hidden',
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
   },
   pinImage: {
     width: '100%',
-    height: '100%',
-    borderRadius: 16,
+    height: 200,
+    backgroundColor: '#1E1E1E',
+  },
+  pinInfo: {
+    padding: 12,
+  },
+  pinTitle: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: '600',
+    marginBottom: 4,
+  },
+  pinDescription: {
+    color: '#B0B0B0',
+    fontSize: 14,
   },
   boardsGrid: {
     padding: 8,
@@ -460,6 +625,13 @@ const styles = StyleSheet.create({
     flex: 1,
     padding: 16,
     justifyContent: 'center',
+  },
+  centerContent: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  retryButton: {
+    marginTop: 16,
   },
 });
 
