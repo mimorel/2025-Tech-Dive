@@ -9,7 +9,7 @@ import {
 } from 'react-native';
 import { TextInput, Button, Text, Surface } from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import config from '../config';
+import { authAPI } from '../services/api';
 
 const LoginScreen = ({ navigation }) => {
   const [formData, setFormData] = useState({ email: '', password: '' });
@@ -22,28 +22,14 @@ const LoginScreen = ({ navigation }) => {
 
     try {
       console.log('Attempting login with:', { email: formData.email });
-      const response = await fetch(`${config.API_URL}/auth/login`, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-          'Accept': 'application/json'
-        },
-        body: JSON.stringify(formData),
-      });
-
-      const data = await response.json();
-      console.log('Login response:', { status: response.status, data });
+      const data = await authAPI.login(formData);
+      console.log('Login response:', data);
       
-      if (!response.ok) {
-        throw new Error(data.message || 'Login failed');
-      }
-
       if (!data.token || !data.user) {
         throw new Error('Invalid response from server');
       }
 
-      // Store the token and user data
-      await AsyncStorage.setItem('token', data.token);
+      // Store the user data
       await AsyncStorage.setItem('user', JSON.stringify(data.user));
       
       console.log('Login successful, navigating to HomeFeed');
@@ -51,7 +37,7 @@ const LoginScreen = ({ navigation }) => {
       navigation.replace('HomeFeed');
     } catch (err) {
       console.error('Login error:', err);
-      setError(err.message || 'An error occurred during login');
+      setError(err.message || 'Login failed. Please try again.');
     } finally {
       setLoading(false);
     }

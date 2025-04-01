@@ -4,6 +4,38 @@ const auth = require('../middleware/auth');
 const Pin = require('../models/Pin');
 const Board = require('../models/Board');
 
+// Get all pins with pagination
+router.get('/', auth, async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const skip = (page - 1) * limit;
+
+    const pins = await Pin.find()
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .populate('user', 'username fullName avatar')
+      .populate('board', 'name');
+
+    // Get total count for pagination
+    const total = await Pin.countDocuments();
+
+    res.json({
+      pins,
+      pagination: {
+        total,
+        page,
+        pages: Math.ceil(total / limit),
+        hasMore: skip + pins.length < total
+      }
+    });
+  } catch (error) {
+    console.error('Error fetching pins:', error);
+    res.status(500).json({ message: 'Server error while fetching pins' });
+  }
+});
+
 // Create a new pin
 router.post('/', auth, async (req, res) => {
   try {

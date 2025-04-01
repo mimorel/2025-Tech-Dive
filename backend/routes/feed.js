@@ -9,6 +9,10 @@ const User = require('../models/User');
 // @access  Private
 router.get('/', auth, async (req, res) => {
   try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const skip = (page - 1) * limit;
+
     const user = await User.findById(req.user.id);
     const following = user.following || [];
 
@@ -20,6 +24,8 @@ router.get('/', auth, async (req, res) => {
       ]
     })
     .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit)
     .populate('user', 'username fullName avatar')
     .populate('board', 'name');
 
@@ -35,9 +41,14 @@ router.get('/', auth, async (req, res) => {
 // @access  Private
 router.get('/trending', auth, async (req, res) => {
   try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const skip = (page - 1) * limit;
+
     const pins = await Pin.find()
       .sort({ saves: -1, createdAt: -1 })
-      .limit(50)
+      .skip(skip)
+      .limit(limit)
       .populate('user', 'username fullName avatar')
       .populate('board', 'name');
 
@@ -53,8 +64,14 @@ router.get('/trending', auth, async (req, res) => {
 // @access  Private
 router.get('/category/:category', auth, async (req, res) => {
   try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const skip = (page - 1) * limit;
+
     const pins = await Pin.find({ category: req.params.category })
       .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
       .populate('user', 'username fullName avatar')
       .populate('board', 'name');
 

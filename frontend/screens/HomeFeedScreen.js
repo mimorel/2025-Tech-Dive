@@ -6,11 +6,14 @@ import {
   Dimensions,
   RefreshControl,
   useWindowDimensions,
+  Image,
+  TouchableOpacity,
 } from 'react-native';
 import { Text, Card, ActivityIndicator, FAB, Searchbar, Chip, useTheme, IconButton } from 'react-native-paper';
 import { useNavigation } from '@react-navigation/native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
-import { feedAPI } from '../services/api';
+import { getFeed } from '../services/api';
+import config from '../config';
 
 const MIN_COLUMN_WIDTH = 150; // Minimum width for each column
 const GRID_PADDING = 8; // Padding around the grid
@@ -18,12 +21,17 @@ const CARD_MARGIN = 4; // Margin around each card
 
 const CATEGORIES = [
   { id: 'all', label: 'All', icon: 'apps' },
-  { id: 'interior', label: 'Interior Design', icon: 'home-variant' },
-  { id: 'food', label: 'Food', icon: 'food' },
+  { id: 'diy & crafts', label: 'DIY & Crafts', icon: 'hammer-wrench' },
+  { id: 'food & drinks', label: 'Food & Drinks', icon: 'food' },
   { id: 'travel', label: 'Travel', icon: 'airplane' },
-  { id: 'tech', label: 'Technology', icon: 'laptop' },
-  { id: 'architecture', label: 'Architecture', icon: 'office-building' },
-  { id: 'nature', label: 'Nature', icon: 'tree' }
+  { id: 'fashion', label: 'Fashion', icon: 'hanger' },
+  { id: 'technology', label: 'Technology', icon: 'laptop' },
+  { id: 'art & design', label: 'Art & Design', icon: 'palette' },
+  { id: 'nature', label: 'Nature', icon: 'tree' },
+  { id: 'sports', label: 'Sports', icon: 'basketball' },
+  { id: 'home & garden', label: 'Home & Garden', icon: 'home' },
+  { id: 'inspiration', label: 'Inspiration', icon: 'lightbulb-on' },
+  { id: 'creative', label: 'Creative', icon: 'brush' }
 ];
 
 const DARK_PURPLE_GREY = '#2F2F3E';
@@ -40,95 +48,106 @@ const HomeFeedScreen = () => {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(true);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [error, setError] = useState(null);
 
   // Calculate number of columns based on screen width
   const numColumns = Math.max(2, Math.floor((screenWidth - (GRID_PADDING * 2)) / MIN_COLUMN_WIDTH));
   const columnWidth = (screenWidth - (GRID_PADDING * 2) - (CARD_MARGIN * 2 * numColumns)) / numColumns;
 
-  const fetchPins = useCallback(async (pageNum = 1) => {
+  const fetchPins = useCallback(async (pageNum = 1, shouldRefresh = false) => {
     try {
-      if (pageNum === 1) {
-        setLoading(true);
-      } else {
-        setIsLoadingMore(true);
-      }
-
-      const response = await feedAPI.getFeed(pageNum);
-      const newPins = response.pins;
+      setError(null);
+      const newPins = await getFeed(pageNum);
       
-      if (pageNum === 1) {
+      if (shouldRefresh) {
         setPins(newPins);
       } else {
         setPins(prevPins => [...prevPins, ...newPins]);
       }
       
-      setHasMore(newPins.length === 20); // If we got less than 20 pins, we've reached the end
+      setHasMore(newPins.length === 20); // If we get less than 20 pins, we've reached the end
       setPage(pageNum);
-    } catch (error) {
-      console.error('Error fetching pins:', error);
+    } catch (err) {
+      console.error('Error fetching pins:', err);
+      setError(err.message);
     } finally {
       setLoading(false);
       setRefreshing(false);
-      setIsLoadingMore(false);
     }
   }, []);
 
   useEffect(() => {
-    fetchPins(1);
+    fetchPins(1, true);
   }, [fetchPins]);
 
   const onRefresh = useCallback(() => {
     setRefreshing(true);
-    setPage(1);
-    setHasMore(true);
-    fetchPins(1);
+    fetchPins(1, true);
   }, [fetchPins]);
 
-  const loadMore = useCallback(() => {
-    if (!isLoadingMore && hasMore) {
+  const loadMore = () => {
+    if (!loading && hasMore) {
       fetchPins(page + 1);
     }
-  }, [fetchPins, isLoadingMore, hasMore, page]);
+  };
 
   const filterPins = useCallback(() => {
     return pins.filter(pin => {
+      // Search filter
       const matchesSearch = searchQuery === '' ||
         pin.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         pin.description.toLowerCase().includes(searchQuery.toLowerCase());
       
-      const category = CATEGORIES.find(cat => cat.id === selectedCategory);
+      // Category filter
       const matchesCategory = selectedCategory === 'all' ||
-        pin.category === category.label;
+        pin.tags.some(tag => {
+          // Handle special cases for category matching
+          if (selectedCategory === 'food & drinks') {
+            return tag.toLowerCase().includes('food') || tag.toLowerCase().includes('drink');
+          }
+          if (selectedCategory === 'art & design') {
+            return tag.toLowerCase().includes('art') || tag.toLowerCase().includes('design');
+          }
+          if (selectedCategory === 'home & garden') {
+            return tag.toLowerCase().includes('home') || tag.toLowerCase().includes('garden');
+          }
+          return tag.toLowerCase() === selectedCategory.toLowerCase();
+        });
 
       return matchesSearch && matchesCategory;
     });
   }, [pins, searchQuery, selectedCategory]);
 
-  const renderPin = useCallback(({ item }) => (
-    <Card
-      style={[styles.card, { width: columnWidth }]}
-      onPress={() => navigation.navigate('PinDetail', { pinId: item._id })}
-    >
+  const renderPin = ({ item }) => (
+    <Card style={[styles.pinContainer, { width: columnWidth }]}>
       <Card.Cover 
-        source={{ uri: item.imageUrl }} 
-        style={[styles.image, { height: columnWidth * 1.3 }]} // 1.3 aspect ratio
+        source={{ uri: item.imageUrl }}
+        style={[styles.pinImage, { height: columnWidth * 1.3 }]} // 1.3 aspect ratio
       />
       <Card.Title
         title={item.title}
-        subtitle={item.author.username}
+        subtitle={item.description}
         titleNumberOfLines={1}
-        subtitleNumberOfLines={1}
+        subtitleNumberOfLines={2}
+        style={styles.pinInfo}
         titleStyle={styles.cardTitle}
         subtitleStyle={styles.cardSubtitle}
       />
     </Card>
-  ), [columnWidth, navigation]);
+  );
 
-  if (loading && page === 1) {
+  if (loading && !refreshing) {
     return (
-      <View style={styles.loadingContainer}>
+      <View style={styles.centerContainer}>
         <ActivityIndicator size="large" color={theme.colors.primary} />
+      </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={styles.centerContainer}>
+        <Text style={styles.errorText}>{error}</Text>
       </View>
     );
   }
@@ -210,28 +229,19 @@ const HomeFeedScreen = () => {
       <FlatList
         data={filteredPins}
         renderItem={renderPin}
-        keyExtractor={(item) => item._id}
+        keyExtractor={item => item._id}
         numColumns={numColumns}
         key={numColumns} // Force re-render when number of columns changes
         contentContainerStyle={[styles.list, { padding: GRID_PADDING }]}
         columnWrapperStyle={styles.columnWrapper}
         refreshControl={
-          <RefreshControl 
-            refreshing={refreshing} 
-            onRefresh={onRefresh}
-            colors={[theme.colors.primary]}
-          />
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
         }
         onEndReached={loadMore}
         onEndReachedThreshold={0.5}
-        ListEmptyComponent={
-          <Text style={[styles.emptyText, { color: theme.colors.placeholder }]}>
-            No pins found
-          </Text>
-        }
-        ListFooterComponent={
-          isLoadingMore ? (
-            <ActivityIndicator size="small" color={theme.colors.primary} style={styles.footerLoader} />
+        ListFooterComponent={() =>
+          loading && hasMore ? (
+            <ActivityIndicator style={styles.footerLoader} size="small" color={theme.colors.primary} />
           ) : null
         }
       />
@@ -288,13 +298,16 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     marginBottom: CARD_MARGIN * 2,
   },
-  card: {
+  pinContainer: {
     margin: CARD_MARGIN,
     elevation: 2,
   },
-  image: {
+  pinImage: {
     borderTopLeftRadius: 8,
     borderTopRightRadius: 8,
+  },
+  pinInfo: {
+    padding: 8,
   },
   cardTitle: {
     fontSize: 14,
@@ -303,24 +316,25 @@ const styles = StyleSheet.create({
   cardSubtitle: {
     fontSize: 12,
   },
+  errorText: {
+    color: 'red',
+    fontSize: 16,
+    textAlign: 'center',
+  },
+  footerLoader: {
+    marginVertical: 16,
+  },
   fab: {
     position: 'absolute',
     margin: 16,
     right: 0,
     bottom: 0,
   },
-  loadingContainer: {
+  centerContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  emptyText: {
-    textAlign: 'center',
-    marginTop: 32,
-    fontSize: 16,
-  },
-  footerLoader: {
-    marginVertical: 16,
+    backgroundColor: '#f5f5f5',
   },
   iconButton: {
     marginLeft: 8,
