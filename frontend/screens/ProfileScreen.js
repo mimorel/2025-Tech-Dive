@@ -194,7 +194,6 @@ const ProfileScreen = ({ navigation }) => {
   };
 
   const renderPin = (pin) => {
-    console.log('Rendering pin:', JSON.stringify(pin, null, 2));
     return (
       <TouchableOpacity
         key={pin._id}
@@ -291,20 +290,24 @@ const ProfileScreen = ({ navigation }) => {
             />
           </View>
 
-          <Avatar.Text 
-            size={80} 
-            label={user.name.split(' ').map(n => n[0]).join('')} 
+          <Avatar.Image
+            source={{ 
+              uri: user.avatarUrl || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(user.username || 'User') + '&background=9C27B0&color=fff'
+            }}
+            size={120}
             style={styles.avatar}
           />
-          <Text variant="headlineSmall" style={styles.name}>
-            {user.name}
-          </Text>
-          <Text variant="titleMedium" style={styles.title}>
-            {user.title}
-          </Text>
-          <Text variant="bodyMedium" style={styles.bio}>
-            {user.bio}
-          </Text>
+          <View style={styles.userInfo}>
+            <Text variant="headlineMedium" style={styles.name}>
+              {user.username || 'User'}
+            </Text>
+            <Text variant="titleMedium" style={styles.title}>
+              {user.title || 'Pinterest User'}
+            </Text>
+            <Text variant="bodyLarge" style={styles.bio}>
+              {user.bio || 'No bio yet'}
+            </Text>
+          </View>
 
           <View style={styles.stats}>
             <TouchableOpacity style={styles.statItem}>
@@ -410,8 +413,13 @@ const ProfileScreen = ({ navigation }) => {
 
         <View style={styles.content}>
           {selectedView === 'pins' ? (
-            <View style={styles.pinsGrid}>
-              {userPins.map(renderPin)}
+            <View style={styles.section}>
+              <Text variant="titleLarge" style={styles.sectionTitle}>
+                Pins
+              </Text>
+              <View style={styles.pinsGrid}>
+                {userPins.map(renderPin)}
+              </View>
             </View>
           ) : (
             <View style={styles.boardsGrid}>
@@ -501,10 +509,13 @@ const styles = StyleSheet.create({
     borderRadius: 60,
     marginBottom: 16,
   },
+  userInfo: {
+    alignItems: 'center',
+  },
   name: {
+    color: '#FFFFFF',
     fontWeight: 'bold',
     marginBottom: 4,
-    color: '#FFFFFF',
   },
   title: {
     color: '#B0B0B0',
@@ -512,9 +523,7 @@ const styles = StyleSheet.create({
   },
   bio: {
     color: '#B0B0B0',
-    textAlign: 'center',
-    marginBottom: 16,
-    paddingHorizontal: 32,
+    lineHeight: 24,
   },
   stats: {
     flexDirection: 'row',
@@ -571,6 +580,14 @@ const styles = StyleSheet.create({
   content: {
     flex: 1,
     padding: 8,
+  },
+  section: {
+    marginBottom: 20,
+  },
+  sectionTitle: {
+    fontWeight: 'bold',
+    color: '#FFFFFF',
+    marginBottom: 8,
   },
   pinsGrid: {
     flexDirection: 'row',

@@ -29,13 +29,7 @@ import { useNavigation, useRoute } from '@react-navigation/native';
 import { MaterialCommunityIcons } from '@expo/vector-icons';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Clipboard from 'expo-clipboard';
-import { 
-  getPinById, 
-  getCurrentUser, 
-  isPinLikedByUser, 
-  isPinSavedByUser,
-  getUserById,
-} from '../data/dummyData';
+import { pinsAPI, authAPI } from '../services/api';
 
 const { width } = Dimensions.get('window');
 
@@ -53,25 +47,117 @@ const PinDetailScreen = () => {
   const [commentDialogVisible, setCommentDialogVisible] = useState(false);
   const [newComment, setNewComment] = useState('');
   const [comments, setComments] = useState([]);
-  const currentUser = getCurrentUser();
+  const [currentUser, setCurrentUser] = useState(null);
+  const [error, setError] = useState(null);
+  const [commentAuthors, setCommentAuthors] = useState({});
+
+  useEffect(() => {
+    console.log('PinDetailScreen mounted with pinId:', pinId);
+    const getCurrentUser = async () => {
+      try {
+        const userData = await AsyncStorage.getItem('userData');
+        if (userData) {
+          const parsedUser = JSON.parse(userData);
+          console.log('Retrieved current user:', parsedUser);
+          setCurrentUser(parsedUser);
+        }
+      } catch (error) {
+        console.error('Error getting current user:', error);
+      }
+    };
+
+    getCurrentUser();
+  }, []);
+
+  const fetchUserDetails = async (userId) => {
+    try {
+      console.log('Fetching user details for userId:', userId);
+      const userData = await authAPI.getUserById(userId);
+      console.log('Fetched user details:', userData);
+      return userData;
+    } catch (error) {
+      console.error('Error fetching user details:', error);
+      return null;
+    }
+  };
 
   const fetchPinDetails = async () => {
     try {
+      console.log('Fetching pin details for pinId:', pinId);
       setLoading(true);
-      console.log('Fetching pin details for ID:', pinId);
+      const response = await pinsAPI.getPinById(pinId);
       
-      const foundPin = getPinById(pinId);
-      if (!foundPin) {
-        throw new Error('Pin not found');
+      // Detailed logging of the API response
+      console.log('=== FULL PIN DATA ===');
+      console.log(JSON.stringify(response, null, 2));
+      
+      if (!response) {
+        throw new Error('No pin data received');
       }
 
-      console.log('Found pin:', foundPin);
-      setPin(foundPin);
-      setIsLiked(isPinLikedByUser(foundPin));
-      setIsSaved(isPinSavedByUser(foundPin));
-      setComments(foundPin.comments || []);
-    } catch (error) {
-      console.error('Error fetching pin details:', error);
+      setPin(response);
+      
+      // Check if current user has liked or saved the pin
+      if (currentUser && response) {
+        setIsLiked(response.likes?.includes(currentUser._id) || false);
+        setIsSaved(response.saves?.includes(currentUser._id) || false);
+      }
+      
+      // Set comments, ensuring it's an array
+      const commentsArray = Array.isArray(response.comments) ? response.comments : [];
+      setComments(commentsArray);
+
+      // Log comments data to see structure
+      console.log('=== COMMENTS DATA ===');
+      console.log(JSON.stringify(commentsArray, null, 2));
+
+      // Fetch user details for each comment author
+      const authorIds = [...new Set(commentsArray.map(comment => {
+        console.log('=== Testing getUserById ===');
+        console.log('Raw comment:', JSON.stringify(comment, null, 2));
+        console.log('Comment user field:', comment.user);
+        return comment.user;
+      }))].filter(id => id); // Remove any undefined/null values
+
+      console.log('Unique author IDs:', authorIds);
+      const authorDetails = {};
+      
+      for (const authorId of authorIds) {
+        if (authorId) {
+          try {
+            console.log('=== Testing getUserById API Call ===');
+            console.log('Attempting to fetch user with ID:', authorId);
+            console.log('ID type:', typeof authorId);
+            console.log('Current authorDetails:', JSON.stringify(authorDetails, null, 2));
+            
+            const userData = await authAPI.getUserById(authorId);
+            console.log('API Response received:', JSON.stringify(userData, null, 2));
+            
+            if (userData && userData.username) {
+              authorDetails[authorId] = {
+                username: userData.username,
+                avatarUrl: userData.avatar || `https://ui-avatars.com/api/?name=${encodeURIComponent(userData.username)}&background=9C27B0&color=fff`
+              };
+              console.log('Successfully added author details:', JSON.stringify(authorDetails[authorId], null, 2));
+              console.log('Updated authorDetails:', JSON.stringify(authorDetails, null, 2));
+            } else {
+              console.error('Invalid user data received:', JSON.stringify(userData, null, 2));
+            }
+          } catch (error) {
+            console.error('=== getUserById Error ===');
+            console.error('Error fetching user details for ID:', authorId);
+            console.error('Error details:', error);
+            console.error('Error stack:', error.stack);
+          }
+        }
+      }
+      
+      console.log('=== Final Author Details ===');
+      console.log(JSON.stringify(authorDetails, null, 2));
+      setCommentAuthors(authorDetails);
+    } catch (err) {
+      console.error('Error fetching pin details:', err);
+      setError(err.message);
     } finally {
       setLoading(false);
       setRefreshing(false);
@@ -79,8 +165,11 @@ const PinDetailScreen = () => {
   };
 
   useEffect(() => {
-    fetchPinDetails();
-  }, [pinId]);
+    if (pinId) {
+      console.log('pinId changed, fetching details...');
+      fetchPinDetails();
+    }
+  }, [pinId, currentUser]);
 
   const onRefresh = () => {
     setRefreshing(true);
@@ -88,6 +177,11 @@ const PinDetailScreen = () => {
   };
 
   const handleLike = async () => {
+    if (!currentUser) {
+      // Handle not logged in state
+      return;
+    }
+
     try {
       // Simulate API call
       setIsLiked(!isLiked);
@@ -103,6 +197,11 @@ const PinDetailScreen = () => {
   };
 
   const handleSave = async () => {
+    if (!currentUser) {
+      // Handle not logged in state
+      return;
+    }
+
     try {
       // Simulate API call
       setIsSaved(!isSaved);
@@ -142,7 +241,7 @@ const PinDetailScreen = () => {
   };
 
   const handleAddComment = async () => {
-    if (!newComment.trim()) return;
+    if (!newComment.trim() || !currentUser) return;
 
     try {
       // Simulate API call
@@ -162,240 +261,254 @@ const PinDetailScreen = () => {
   };
 
   if (loading) {
+    console.log('Rendering loading state');
     return (
-      <View style={[styles.loadingContainer, { backgroundColor: '#121212' }]}>
-        <ActivityIndicator size="large" color={theme.colors.primary} />
+      <View style={[styles.container, styles.centerContent]}>
+        <ActivityIndicator size="large" color="#9C27B0" />
+      </View>
+    );
+  }
+
+  if (error) {
+    console.log('Rendering error state:', error);
+    return (
+      <View style={[styles.container, styles.centerContent]}>
+        <Text style={{ color: '#FFFFFF' }}>Error: {error}</Text>
+        <Button onPress={fetchPinDetails} style={styles.retryButton}>
+          Retry
+        </Button>
       </View>
     );
   }
 
   if (!pin) {
+    console.log('Rendering no pin state');
     return (
-      <View style={[styles.loadingContainer, { backgroundColor: '#121212' }]}>
-        <Text style={{ color: '#FFFFFF' }}>No pin found</Text>
+      <View style={[styles.container, styles.centerContent]}>
+        <Text style={{ color: '#FFFFFF' }}>Pin not found</Text>
       </View>
     );
   }
 
+  console.log('Rendering pin details:', pin);
   return (
-    <ScrollView
-      style={[styles.container, { backgroundColor: '#121212' }]}
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
-    >
-      <Image
-        source={{ uri: pin.imageUrl }}
-        style={styles.image}
-        resizeMode="cover"
-      />
+    <View style={styles.container}>
+      <ScrollView
+        style={styles.scrollView}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        <Image
+          source={{ uri: pin.imageUrl }}
+          style={styles.pinImage}
+          resizeMode="cover"
+        />
 
-      <Surface style={[styles.content, { backgroundColor: '#1E1E1E' }]}>
-        {/* Header Actions */}
-        <View style={styles.headerActions}>
-          <IconButton
-            icon={() => <MaterialCommunityIcons name="dots-horizontal" size={24} color="#FFFFFF" />}
-            onPress={() => setMenuVisible(true)}
-          />
-          <Menu
-            visible={menuVisible}
-            onDismiss={() => setMenuVisible(false)}
-            anchor={<View />}
-            style={{ backgroundColor: '#1E1E1E' }}
-          >
-            <Menu.Item 
-              onPress={handleShare} 
-              title="Share" 
-              leadingIcon={() => <MaterialCommunityIcons name="share" size={24} color="#FFFFFF" />}
-              titleStyle={{ color: '#FFFFFF' }}
+        <Surface style={styles.content}>
+          {/* Header Actions */}
+          <View style={styles.headerActions}>
+            <IconButton
+              icon={() => <MaterialCommunityIcons name="dots-horizontal" size={24} color="#FFFFFF" />}
+              onPress={() => setMenuVisible(true)}
             />
-            <Menu.Item 
-              onPress={handleCopyLink} 
-              title="Copy link" 
-              leadingIcon={() => <MaterialCommunityIcons name="link" size={24} color="#FFFFFF" />}
-              titleStyle={{ color: '#FFFFFF' }}
-            />
-            <Menu.Item 
-              onPress={handleReport} 
-              title="Report" 
-              leadingIcon={() => <MaterialCommunityIcons name="flag" size={24} color="#FFFFFF" />}
-              titleStyle={{ color: '#FFFFFF' }}
-            />
-          </Menu>
-        </View>
-
-        {/* Title and Description */}
-        <View style={styles.header}>
-          <Text variant="headlineSmall" style={[styles.title, { color: '#FFFFFF' }]}>
-            {pin.title}
-          </Text>
-          <Text variant="bodyLarge" style={[styles.description, { color: '#B0B0B0' }]}>
-            {pin.description}
-          </Text>
-        </View>
-
-        {/* Author Info */}
-        <TouchableOpacity
-          style={styles.authorSection}
-          onPress={() => navigation.navigate('Profile', { userId: pin.author._id })}
-        >
-          <Avatar.Image
-            source={{ uri: pin.author.avatar }}
-            size={40}
-          />
-          <View style={styles.authorInfo}>
-            <Text variant="titleMedium" style={{ color: '#FFFFFF' }}>
-              {pin.author.username}
-            </Text>
-            <Text variant="bodyMedium" style={{ color: '#B0B0B0' }}>
-              {pin.author.bio}
-            </Text>
-          </View>
-        </TouchableOpacity>
-
-        <Divider style={[styles.divider, { backgroundColor: '#333333' }]} />
-
-        {/* Board Info */}
-        <TouchableOpacity
-          style={styles.boardSection}
-          onPress={() => navigation.navigate('BoardDetail', { boardId: pin.board._id })}
-        >
-          <Image
-            source={{ uri: pin.board.coverImage }}
-            style={styles.boardThumbnail}
-          />
-          <View style={styles.boardInfo}>
-            <Text variant="titleMedium" style={{ color: '#FFFFFF' }}>
-              {pin.board.name}
-            </Text>
-            <Text variant="bodyMedium" style={{ color: '#B0B0B0' }}>
-              {pin.board.description}
-            </Text>
-          </View>
-        </TouchableOpacity>
-
-        <Divider style={[styles.divider, { backgroundColor: '#333333' }]} />
-
-        {/* Tags */}
-        <View style={styles.tagsContainer}>
-          {pin.tags.map((tag, index) => (
-            <Chip
-              key={index}
-              style={[styles.tag, { backgroundColor: '#333333' }]}
-              textStyle={{ color: '#FFFFFF' }}
-              onPress={() => navigation.navigate('Search', { query: tag })}
+            <Menu
+              visible={menuVisible}
+              onDismiss={() => setMenuVisible(false)}
+              anchor={<View />}
+              style={{ backgroundColor: '#1E1E1E' }}
             >
-              {tag}
-            </Chip>
-          ))}
-        </View>
-
-        <Divider style={[styles.divider, { backgroundColor: '#333333' }]} />
-
-        {/* Stats and Actions */}
-        <View style={styles.statsContainer}>
-          <View style={styles.stats}>
-            <Text style={[styles.statCount, { color: '#FFFFFF' }]}>
-              {pin.likes.length}
-            </Text>
-            <Text style={[styles.statLabel, { color: '#B0B0B0' }]}>likes</Text>
-          </View>
-          <View style={styles.stats}>
-            <Text style={[styles.statCount, { color: '#FFFFFF' }]}>
-              {pin.saves.length}
-            </Text>
-            <Text style={[styles.statLabel, { color: '#B0B0B0' }]}>saves</Text>
-          </View>
-          <View style={styles.stats}>
-            <Text style={[styles.statCount, { color: '#FFFFFF' }]}>
-              {comments.length}
-            </Text>
-            <Text style={[styles.statLabel, { color: '#B0B0B0' }]}>comments</Text>
-          </View>
-        </View>
-
-        {/* Action Buttons */}
-        <View style={styles.actionButtons}>
-          <Button
-            mode={isLiked ? "contained" : "outlined"}
-            onPress={handleLike}
-            style={[
-              styles.actionButton,
-              {
-                backgroundColor: isLiked ? '#9C27B0' : 'transparent',
-                borderColor: '#9C27B0'
-              }
-            ]}
-            icon={() => (
-              <MaterialCommunityIcons
-                name={isLiked ? "heart" : "heart-outline"}
-                size={24}
-                color={isLiked ? "#FFFFFF" : "#9C27B0"}
+              <Menu.Item 
+                onPress={handleShare} 
+                title="Share" 
+                leadingIcon={() => <MaterialCommunityIcons name="share" size={24} color="#FFFFFF" />}
+                titleStyle={{ color: '#FFFFFF' }}
               />
-            )}
-          >
-            {isLiked ? 'Liked' : 'Like'}
-          </Button>
-          <Button
-            mode={isSaved ? "contained" : "outlined"}
-            onPress={handleSave}
-            style={[
-              styles.actionButton,
-              {
-                backgroundColor: isSaved ? '#9C27B0' : 'transparent',
-                borderColor: '#9C27B0'
-              }
-            ]}
-            icon={() => (
-              <MaterialCommunityIcons
-                name={isSaved ? "bookmark" : "bookmark-outline"}
-                size={24}
-                color={isSaved ? "#FFFFFF" : "#9C27B0"}
+              <Menu.Item 
+                onPress={handleCopyLink} 
+                title="Copy link" 
+                leadingIcon={() => <MaterialCommunityIcons name="link" size={24} color="#FFFFFF" />}
+                titleStyle={{ color: '#FFFFFF' }}
               />
-            )}
-          >
-            {isSaved ? 'Saved' : 'Save'}
-          </Button>
-        </View>
+              <Menu.Item 
+                onPress={handleReport} 
+                title="Report" 
+                leadingIcon={() => <MaterialCommunityIcons name="flag" size={24} color="#FFFFFF" />}
+                titleStyle={{ color: '#FFFFFF' }}
+              />
+            </Menu>
+          </View>
 
-        <Divider style={[styles.divider, { backgroundColor: '#333333' }]} />
-
-        {/* Comments Section */}
-        <View style={styles.commentsSection}>
-          <View style={styles.commentHeader}>
-            <Text variant="titleMedium" style={{ color: '#FFFFFF' }}>
-              Comments
+          {/* Title and Description */}
+          <View style={styles.header}>
+            <Text variant="headlineSmall" style={[styles.title, { color: '#FFFFFF' }]}>
+              {pin.title}
             </Text>
+            <Text variant="bodyLarge" style={[styles.description, { color: '#B0B0B0' }]}>
+              {pin.description}
+            </Text>
+          </View>
+
+          {/* Author Info */}
+          <TouchableOpacity
+            style={styles.authorSection}
+            onPress={() => navigation.navigate('Profile', { userId: pin.user._id })}
+          >
+            <Avatar.Image
+              source={{ uri: pin.user.avatarUrl || 'https://via.placeholder.com/150' }}
+              size={40}
+            />
+            <View style={styles.authorInfo}>
+              <Text variant="titleMedium" style={{ color: '#FFFFFF' }}>
+                {pin.user.name}
+              </Text>
+              <Text variant="bodyMedium" style={{ color: '#B0B0B0' }}>
+                {pin.user.title}
+              </Text>
+            </View>
+          </TouchableOpacity>
+
+          <Divider style={[styles.divider, { backgroundColor: '#333333' }]} />
+
+          {/* Tags */}
+          <View style={styles.tagsContainer}>
+            {pin.tags?.map((tag, index) => (
+              <Chip
+                key={index}
+                style={[styles.tag, { backgroundColor: '#333333' }]}
+                textStyle={{ color: '#FFFFFF' }}
+                onPress={() => navigation.navigate('Search', { query: tag })}
+              >
+                {tag}
+              </Chip>
+            ))}
+          </View>
+
+          <Divider style={[styles.divider, { backgroundColor: '#333333' }]} />
+
+          {/* Stats and Actions */}
+          <View style={styles.statsContainer}>
+            <View style={styles.stats}>
+              <Text style={[styles.statCount, { color: '#FFFFFF' }]}>
+                {pin.likes?.length || 0}
+              </Text>
+              <Text style={[styles.statLabel, { color: '#B0B0B0' }]}>likes</Text>
+            </View>
+            <View style={styles.stats}>
+              <Text style={[styles.statCount, { color: '#FFFFFF' }]}>
+                {pin.saves?.length || 0}
+              </Text>
+              <Text style={[styles.statLabel, { color: '#B0B0B0' }]}>saves</Text>
+            </View>
+            <View style={styles.stats}>
+              <Text style={[styles.statCount, { color: '#FFFFFF' }]}>
+                {comments.length}
+              </Text>
+              <Text style={[styles.statLabel, { color: '#B0B0B0' }]}>comments</Text>
+            </View>
+          </View>
+
+          {/* Action Buttons */}
+          <View style={styles.actionButtons}>
             <Button
-              mode="text"
-              onPress={() => setCommentDialogVisible(true)}
-              textColor="#9C27B0"
+              mode={isLiked ? "contained" : "outlined"}
+              onPress={handleLike}
+              style={[
+                styles.actionButton,
+                {
+                  backgroundColor: isLiked ? '#9C27B0' : 'transparent',
+                  borderColor: '#9C27B0'
+                }
+              ]}
+              icon={() => (
+                <MaterialCommunityIcons
+                  name={isLiked ? "heart" : "heart-outline"}
+                  size={24}
+                  color={isLiked ? "#FFFFFF" : "#9C27B0"}
+                />
+              )}
             >
-              Add Comment
+              {isLiked ? 'Liked' : 'Like'}
+            </Button>
+            <Button
+              mode={isSaved ? "contained" : "outlined"}
+              onPress={handleSave}
+              style={[
+                styles.actionButton,
+                {
+                  backgroundColor: isSaved ? '#9C27B0' : 'transparent',
+                  borderColor: '#9C27B0'
+                }
+              ]}
+              icon={() => (
+                <MaterialCommunityIcons
+                  name={isSaved ? "bookmark" : "bookmark-outline"}
+                  size={24}
+                  color={isSaved ? "#FFFFFF" : "#9C27B0"}
+                />
+              )}
+            >
+              {isSaved ? 'Saved' : 'Save'}
             </Button>
           </View>
 
-          {comments.map((comment, index) => (
-            <View key={comment._id} style={styles.commentItem}>
-              <Avatar.Image
-                source={{ uri: comment.author.avatar }}
-                size={32}
-              />
-              <View style={styles.commentContent}>
-                <Text variant="titleSmall" style={{ color: '#FFFFFF' }}>
-                  {comment.author.username}
-                </Text>
-                <Text variant="bodyMedium" style={{ color: '#B0B0B0' }}>
-                  {comment.text}
-                </Text>
-                <Text variant="bodySmall" style={{ color: '#666666' }}>
-                  {new Date(comment.createdAt).toLocaleDateString()}
-                </Text>
-              </View>
+          <Divider style={[styles.divider, { backgroundColor: '#333333' }]} />
+
+          {/* Comments Section */}
+          <View style={styles.commentsSection}>
+            <View style={styles.commentHeader}>
+              <Text variant="titleMedium" style={{ color: '#FFFFFF' }}>
+                Comments
+              </Text>
+              <Button
+                mode="text"
+                onPress={() => setCommentDialogVisible(true)}
+                textColor="#9C27B0"
+              >
+                Add Comment
+              </Button>
             </View>
-          ))}
-        </View>
-      </Surface>
+
+            {Array.isArray(comments) && comments.length > 0 ? (
+              comments.map((comment, index) => {
+                const authorId = comment.user;
+                const authorData = commentAuthors[authorId];
+                console.log('Rendering comment:', {
+                  commentId: comment._id,
+                  authorId,
+                  authorData,
+                  comment
+                });
+                return (
+                  <View key={comment._id || index} style={styles.commentItem}>
+                    <Avatar.Image
+                      source={{ 
+                        uri: authorData?.avatarUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(authorData?.username || 'User')}&background=9C27B0&color=fff`
+                      }}
+                      size={32}
+                    />
+                    <View style={styles.commentContent}>
+                      <Text variant="titleSmall" style={{ color: '#FFFFFF' }}>
+                        {authorData?.username || 'Loading...'}
+                      </Text>
+                      <Text variant="bodyMedium" style={{ color: '#B0B0B0' }}>
+                        {comment.text || ''}
+                      </Text>
+                      <Text variant="bodySmall" style={{ color: '#666666' }}>
+                        {comment.createdAt ? new Date(comment.createdAt).toLocaleDateString() : 'Unknown date'}
+                      </Text>
+                    </View>
+                  </View>
+                );
+              })
+            ) : (
+              <Text style={{ color: '#B0B0B0', textAlign: 'center', marginTop: 16 }}>
+                No comments yet. Be the first to comment!
+              </Text>
+            )}
+          </View>
+        </Surface>
+      </ScrollView>
 
       {/* Comment Dialog */}
       <Portal>
@@ -428,28 +541,34 @@ const PinDetailScreen = () => {
           </Dialog.Actions>
         </Dialog>
       </Portal>
-    </ScrollView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#121212',
   },
-  loadingContainer: {
+  scrollView: {
     flex: 1,
+  },
+  centerContent: {
     justifyContent: 'center',
     alignItems: 'center',
   },
-  image: {
+  pinImage: {
     width: width,
     height: width,
+    backgroundColor: '#1E1E1E',
   },
   content: {
     padding: 16,
     borderTopLeftRadius: 16,
     borderTopRightRadius: 16,
     marginTop: -16,
+    backgroundColor: '#1E1E1E',
+    minHeight: width, // Ensure content takes at least the height of the image
   },
   headerActions: {
     flexDirection: 'row',
@@ -476,19 +595,6 @@ const styles = StyleSheet.create({
   },
   divider: {
     marginVertical: 16,
-  },
-  boardSection: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  boardThumbnail: {
-    width: 60,
-    height: 60,
-    borderRadius: 8,
-    marginRight: 12,
-  },
-  boardInfo: {
-    flex: 1,
   },
   tagsContainer: {
     flexDirection: 'row',
@@ -538,6 +644,9 @@ const styles = StyleSheet.create({
   commentContent: {
     marginLeft: 12,
     flex: 1,
+  },
+  retryButton: {
+    marginTop: 16,
   },
 });
 
