@@ -17,27 +17,38 @@ const LoginScreen = ({ navigation }) => {
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async () => {
-    setError('');
-    setLoading(true);
-
     try {
-      console.log('Attempting login with:', { email: formData.email });
-      const data = await authAPI.login(formData);
-      console.log('Login response:', data);
+      setLoading(true);
+      setError('');
       
-      if (!data.token || !data.user) {
+      console.log('Attempting login with:', { email: formData.email });
+      const response = await authAPI.login({ email: formData.email, password: formData.password });
+      console.log('Login response:', JSON.stringify(response, null, 2));
+      
+      if (!response.token || !response.user) {
+        console.error('Invalid response format:', response);
         throw new Error('Invalid response from server');
       }
-
-      // Store the user data
-      await AsyncStorage.setItem('user', JSON.stringify(data.user));
       
-      console.log('Login successful, navigating to HomeFeed');
+      // Store the token
+      await AsyncStorage.setItem('token', response.token);
+      console.log('Token stored successfully');
+      
+      // Store the user data
+      await AsyncStorage.setItem('userData', JSON.stringify(response.user));
+      console.log('User data stored successfully:', JSON.stringify(response.user, null, 2));
+      
+      // Verify token was stored
+      const storedToken = await AsyncStorage.getItem('token');
+      console.log('Verified stored token:', storedToken ? 'Token exists' : 'No token found');
+      
       // Navigate to home feed
+      console.log('Login successful, navigating to HomeFeed');
       navigation.replace('HomeFeed');
-    } catch (err) {
-      console.error('Login error:', err);
-      setError(err.message || 'Login failed. Please try again.');
+    } catch (error) {
+      console.error('Login error:', error);
+      console.error('Error stack:', error.stack);
+      setError(error.message || 'Login failed. Please try again.');
     } finally {
       setLoading(false);
     }

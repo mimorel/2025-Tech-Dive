@@ -4,71 +4,88 @@ const auth = require('../middleware/auth');
 const Board = require('../models/Board');
 const Pin = require('../models/Pin');
 
-// Create a new board
+// @route   GET api/boards
+// @desc    Get all boards
+// @access  Private
+router.get('/', auth, async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1;
+    const limit = parseInt(req.query.limit) || 20;
+    const skip = (page - 1) * limit;
+
+    const boards = await Board.find({ $or: [{ user: req.user.id }, { isPrivate: false }] })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .populate('user', 'name username title bio')
+      .populate('pins');
+
+    const total = await Board.countDocuments({ $or: [{ user: req.user.id }, { isPrivate: false }] });
+
+    res.json({
+      boards,
+      total,
+      pages: Math.ceil(total / limit),
+      currentPage: page
+    });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
+  }
+});
+
+// @route   POST api/boards
+// @desc    Create a board
+// @access  Private
 router.post('/', auth, async (req, res) => {
   try {
-    const { name, description, privacy, category } = req.body;
+    const { name, description, isPrivate } = req.body;
 
     const board = new Board({
       name,
       description,
-      privacy,
-      category,
-      user: req.user.id,
+      isPrivate,
+      user: req.user.id
     });
 
     await board.save();
     res.json(board);
-  } catch (error) {
-    console.error('Error creating board:', error);
-    res.status(500).json({ message: 'Server error' });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
   }
 });
 
-// Get user's boards
-router.get('/', auth, async (req, res) => {
-  try {
-    const boards = await Board.find({ user: req.user.id })
-      .sort({ createdAt: -1 })
-      .populate('pins', 'imageUrl');
-
-    res.json(boards);
-  } catch (error) {
-    console.error('Error fetching boards:', error);
-    res.status(500).json({ message: 'Server error' });
-  }
-});
-
-// Get a specific board
+// @route   GET api/boards/:id
+// @desc    Get board by ID
+// @access  Private
 router.get('/:id', auth, async (req, res) => {
   try {
     const board = await Board.findById(req.params.id)
-      .populate('pins')
-      .populate('user', 'username avatar')
-      .populate('collaborators', 'username avatar');
+      .populate('user', 'name username title bio')
+      .populate('pins');
 
     if (!board) {
       return res.status(404).json({ message: 'Board not found' });
     }
 
     // Check if user has access to the board
-    if (board.privacy !== 'public' && 
-        board.user.toString() !== req.user.id && 
-        !board.collaborators.some(collab => collab._id.toString() === req.user.id)) {
-      return res.status(403).json({ message: 'Access denied' });
+    if (board.isPrivate && board.user.toString() !== req.user.id) {
+      return res.status(401).json({ message: 'Not authorized' });
     }
 
     res.json(board);
-  } catch (error) {
-    console.error('Error fetching board:', error);
-    res.status(500).json({ message: 'Server error' });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
   }
 });
 
-// Update a board
+// @route   PUT api/boards/:id
+// @desc    Update a board
+// @access  Private
 router.put('/:id', auth, async (req, res) => {
   try {
-    const { name, description, privacy, category } = req.body;
     const board = await Board.findById(req.params.id);
 
     if (!board) {
@@ -77,23 +94,26 @@ router.put('/:id', auth, async (req, res) => {
 
     // Check if user owns the board
     if (board.user.toString() !== req.user.id) {
-      return res.status(403).json({ message: 'Not authorized' });
+      return res.status(401).json({ message: 'Not authorized' });
     }
+
+    const { name, description, isPrivate } = req.body;
 
     board.name = name || board.name;
     board.description = description || board.description;
-    board.privacy = privacy || board.privacy;
-    board.category = category || board.category;
+    board.isPrivate = isPrivate !== undefined ? isPrivate : board.isPrivate;
 
     await board.save();
     res.json(board);
-  } catch (error) {
-    console.error('Error updating board:', error);
-    res.status(500).json({ message: 'Server error' });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
   }
 });
 
-// Delete a board
+// @route   DELETE api/boards/:id
+// @desc    Delete a board
+// @access  Private
 router.delete('/:id', auth, async (req, res) => {
   try {
     const board = await Board.findById(req.params.id);
@@ -104,17 +124,17 @@ router.delete('/:id', auth, async (req, res) => {
 
     // Check if user owns the board
     if (board.user.toString() !== req.user.id) {
-      return res.status(403).json({ message: 'Not authorized' });
+      return res.status(401).json({ message: 'Not authorized' });
     }
 
-    // Remove all pins from this board
+    // Delete all pins in the board
     await Pin.deleteMany({ board: board._id });
-    await board.remove();
 
-    res.json({ message: 'Board deleted' });
-  } catch (error) {
-    console.error('Error deleting board:', error);
-    res.status(500).json({ message: 'Server error' });
+    await board.remove();
+    res.json({ message: 'Board removed' });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
   }
 });
 

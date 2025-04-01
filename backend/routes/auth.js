@@ -2,27 +2,31 @@ const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
-const auth = require('../middleware/auth');
+const config = require('../config');
 const User = require('../models/User');
+const auth = require('../middleware/auth');
 
-// Register a new user
+// @route   POST api/auth/register
+// @desc    Register a user
+// @access  Public
 router.post('/register', async (req, res) => {
   try {
-    const { username, email, password } = req.body;
+    const { email, password, name, username, title, bio } = req.body;
 
-    // Check if user already exists
-    let user = await User.findOne({ $or: [{ email }, { username }] });
+    // Check if user exists
+    let user = await User.findOne({ email });
     if (user) {
-      return res.status(400).json({
-        message: user.email === email ? 'Email already exists' : 'Username already exists'
-      });
+      return res.status(400).json({ message: 'User already exists' });
     }
 
     // Create new user
     user = new User({
-      username,
       email,
       password,
+      name,
+      username,
+      title,
+      bio
     });
 
     // Hash password
@@ -31,64 +35,68 @@ router.post('/register', async (req, res) => {
 
     await user.save();
 
-    // Create JWT token
+    // Create token
     const payload = {
       user: {
-        id: user.id,
-      },
+        id: user.id
+      }
     };
 
     jwt.sign(
       payload,
-      process.env.JWT_SECRET,
+      config.JWT_SECRET,
       { expiresIn: '7d' },
       (err, token) => {
         if (err) throw err;
-        res.json({ token });
+        res.json({ token, user: { id: user.id, name: user.name, email: user.email, username: user.username, title: user.title, bio: user.bio } });
       }
     );
-  } catch (error) {
-    console.error('Error in registration:', error);
-    res.status(500).json({ message: 'Server error' });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
   }
 });
 
-// Login user
+// @route   POST api/auth/login
+// @desc    Login user & get token
+// @access  Public
 router.post('/login', async (req, res) => {
   try {
     console.log('Login attempt received:', {
-      body: req.body,
-      headers: req.headers,
-      method: req.method,
-      path: req.path
+      email: req.body.email,
+      body: req.body
     });
 
     const { email, password } = req.body;
 
     // Check if user exists
-    const user = await User.findOne({ email });
+    let user = await User.findOne({ email });
+    console.log('User found:', user ? 'Yes' : 'No');
+    
     if (!user) {
-      console.log('User not found:', email);
+      console.log('User not found for email:', email);
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
-    // Verify password
+    // Validate password
     const isMatch = await bcrypt.compare(password, user.password);
+    console.log('Password match:', isMatch);
+    
     if (!isMatch) {
       console.log('Invalid password for user:', email);
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
-    // Create JWT token
+    // Create token
     const payload = {
       user: {
-        id: user.id,
-      },
+        id: user.id
+      }
     };
 
     jwt.sign(
       payload,
-      process.env.JWT_SECRET,
+      config.JWT_SECRET,
       { expiresIn: '7d' },
       (err, token) => {
         if (err) {
@@ -103,30 +111,29 @@ router.post('/login', async (req, res) => {
             id: user._id,
             username: user.username,
             email: user.email,
-            fullName: user.fullName,
-            bio: user.bio,
-            avatar: user.avatar,
-            location: user.location,
-            website: user.website,
-            settings: user.settings
+            name: user.name,
+            title: user.title,
+            bio: user.bio
           }
         });
       }
     );
-  } catch (error) {
-    console.error('Error in login:', error);
-    res.status(500).json({ message: 'Server error' });
+  } catch (err) {
+    console.error('Login error:', err);
+    res.status(500).send('Server Error');
   }
 });
 
-// Get current user
+// @route   GET api/auth/me
+// @desc    Get current user
+// @access  Private
 router.get('/me', auth, async (req, res) => {
   try {
     const user = await User.findById(req.user.id).select('-password');
     res.json(user);
-  } catch (error) {
-    console.error('Error fetching user:', error);
-    res.status(500).json({ message: 'Server error' });
+  } catch (err) {
+    console.error(err.message);
+    res.status(500).send('Server Error');
   }
 });
 
