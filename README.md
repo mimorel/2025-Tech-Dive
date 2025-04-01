@@ -83,7 +83,7 @@ mongod
 net start MongoDB
 ```
 
-5. Seed the database (optional):
+5. Seed the database:
 ```bash
 node scripts/seedDatabase.js
 ```
