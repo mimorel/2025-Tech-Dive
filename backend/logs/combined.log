@@ -102,3 +102,6 @@
 {"level":"info","message":"::1 - - [01/Apr/2025:03:13:14 +0000] \"GET /test HTTP/1.1\" 200 97 \"-\" \"PostmanRuntime/7.43.2\"","timestamp":"2025-04-01T03:13:14.082Z"}
 {"level":"info","message":"Server running on port 3000","timestamp":"2025-04-01T03:13:35.010Z"}
 {"level":"info","message":"MongoDB connected","timestamp":"2025-04-01T03:13:36.025Z"}
+{"level":"info","message":"::1 - - [01/Apr/2025:03:18:28 +0000] \"POST /api/auth/register HTTP/1.1\" 200 195 \"-\" \"PostmanRuntime/7.43.2\"","timestamp":"2025-04-01T03:18:28.922Z"}
+{"level":"info","message":"::1 - - [01/Apr/2025:03:18:44 +0000] \"POST /api/auth/login HTTP/1.1\" 200 195 \"-\" \"PostmanRuntime/7.43.2\"","timestamp":"2025-04-01T03:18:44.092Z"}
+{"level":"info","message":"::1 - - [01/Apr/2025:03:24:20 +0000] \"POST /api/auth/login HTTP/1.1\" 200 195 \"http://localhost:19006/\" \"Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/134.0.0.0 Safari/537.36\"","timestamp":"2025-04-01T03:24:20.241Z"}

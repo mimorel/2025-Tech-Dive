@@ -9,6 +9,7 @@ import {
 } from 'react-native';
 import { TextInput, Button, Text, Surface } from 'react-native-paper';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import config from '../config';
 
 const LoginScreen = ({ navigation }) => {
   const [formData, setFormData] = useState({ email: '', password: '' });
@@ -20,35 +21,30 @@ const LoginScreen = ({ navigation }) => {
     setLoading(true);
 
     try {
-      // Temporary frontend-only validation
-      if (formData.email === 'test@test.com' && formData.password === 'test123') {
-        // Store a dummy token
-        await AsyncStorage.setItem('token', 'dummy-token-for-testing');
-        navigation.replace('HomeFeed');
-        return;
-      }
-
-      // Show error for any other credentials during testing
-      throw new Error('Please use test@test.com / test123 for testing');
-
-      // Original backend call - commented out for now
-      /*
-      const response = await fetch('http://localhost:3000/api/auth/login', {
+      const response = await fetch(`${config.API_URL}/auth/login`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
         body: JSON.stringify(formData),
       });
 
       const data = await response.json();
+      
       if (!response.ok) {
         throw new Error(data.message || 'Login failed');
       }
 
+      // Store the token and user data
       await AsyncStorage.setItem('token', data.token);
+      await AsyncStorage.setItem('user', JSON.stringify(data.user));
+      
+      // Navigate to home feed
       navigation.replace('HomeFeed');
-      */
     } catch (err) {
-      setError(err.message);
+      console.error('Login error:', err);
+      setError(err.message || 'An error occurred during login');
     } finally {
       setLoading(false);
     }
@@ -64,11 +60,6 @@ const LoginScreen = ({ navigation }) => {
           <View>
             <Text variant="headlineMedium" style={styles.title}>Welcome Back</Text>
             {error ? <Text style={styles.error}>{error}</Text> : null}
-            <Text style={styles.testCredentials}>
-              Test credentials:{'\n'}
-              Email: test@test.com{'\n'}
-              Password: test123
-            </Text>
           </View>
         </TouchableWithoutFeedback>
 
@@ -131,11 +122,6 @@ const styles = StyleSheet.create({
     marginBottom: 24,
     fontWeight: 'bold',
   },
-  testCredentials: {
-    marginBottom: 16,
-    color: '#666',
-    textAlign: 'center',
-  },
   input: {
     width: '100%',
     marginBottom: 16,
@@ -154,6 +140,7 @@ const styles = StyleSheet.create({
   error: {
     color: '#B00020',
     marginBottom: 16,
+    textAlign: 'center',
   },
 });
 
