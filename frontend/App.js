@@ -4,6 +4,7 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { Provider as PaperProvider } from 'react-native-paper';
 import { StatusBar } from 'expo-status-bar';
 import { SettingsProvider } from './context/SettingsContext';
+import { AuthProvider } from './context/AuthContext';
 
 // Import screens
 import LoginScreen from './screens/LoginScreen';
@@ -27,114 +28,116 @@ const Stack = createNativeStackNavigator();
 
 export default function App() {
   return (
-    <SettingsProvider>
-      <PaperProvider>
-        <NavigationContainer>
-          <Stack.Navigator 
-            initialRouteName="Login"
-            screenOptions={{
-              headerStyle: {
-                backgroundColor: '#1A1A1A',
-              },
-              headerTintColor: '#FFFFFF',
-              headerTitleStyle: {
-                fontWeight: 'bold',
-              },
-            }}
-          >
-            <Stack.Screen 
-              name="Login" 
-              component={LoginScreen} 
-              options={{ headerShown: false }}
-            />
-            <Stack.Screen 
-              name="Register" 
-              component={RegisterScreen}
-              options={{ headerShown: false }}
-            />
-            <Stack.Screen 
-              name="HomeFeed" 
-              component={HomeFeedScreen}
-              options={{ title: 'Home' }}
-            />
-            <Stack.Screen 
-              name="Profile" 
-              component={ProfileScreen}
-            />
-            <Stack.Screen 
-              name="PinDetail" 
-              component={PinDetailScreen}
-              options={{ title: 'Pin' }}
-            />
-            <Stack.Screen 
-              name="BoardDetail" 
-              component={BoardDetailScreen}
-              options={{ title: 'Board' }}
-            />
-            <Stack.Screen 
-              name="CreatePin" 
-              component={CreatePinScreen}
-              options={{
-                presentation: 'transparentModal',
-                animation: 'slide_from_bottom',
-                headerShown: false,
-                contentStyle: { backgroundColor: 'transparent' }
+    <AuthProvider>
+      <SettingsProvider>
+        <PaperProvider>
+          <NavigationContainer>
+            <Stack.Navigator 
+              initialRouteName="Login"
+              screenOptions={{
+                headerStyle: {
+                  backgroundColor: '#1A1A1A',
+                },
+                headerTintColor: '#FFFFFF',
+                headerTitleStyle: {
+                  fontWeight: 'bold',
+                },
               }}
-            />
-            <Stack.Screen 
-              name="CreateBoard" 
-              component={CreateBoardScreen}
-              options={{ title: 'Create Board' }}
-            />
-            <Stack.Screen 
-              name="Search" 
-              component={SearchScreen}
-            />
-            <Stack.Screen 
-              name="EditProfile" 
-              component={EditProfileScreen}
-              options={{ title: 'Edit Profile' }}
-            />
-            <Stack.Screen 
-              name="UserBoards" 
-              component={UserBoardsScreen}
-              options={{ title: 'Boards' }}
-            />
-            <Stack.Screen 
-              name="UserPins" 
-              component={UserPinsScreen}
-              options={{ title: 'Pins' }}
-            />
-            <Stack.Screen 
-              name="Trending" 
-              component={TrendingScreen}
-              options={{ title: 'Trending' }}
-            />
-            <Stack.Screen 
-              name="EditBoard" 
-              component={EditBoardScreen}
-              options={{ title: 'Edit Board' }}
-            />
-            <Stack.Screen 
-              name="SelectBoard" 
-              component={SelectBoardScreen}
-              options={{ 
-                title: 'Select Board',
-                headerShown: true
-              }}
-            />
-            <Stack.Screen 
-              name="Settings" 
-              component={SettingsScreen}
-              options={{ 
-                title: 'Settings',
-                headerShown: false
-              }}
-            />
-          </Stack.Navigator>
-        </NavigationContainer>
-        <StatusBar style="light" />
-      </PaperProvider>
-    </SettingsProvider>
+            >
+              <Stack.Screen 
+                name="Login" 
+                component={LoginScreen} 
+                options={{ headerShown: false }}
+              />
+              <Stack.Screen 
+                name="Register" 
+                component={RegisterScreen}
+                options={{ headerShown: false }}
+              />
+              <Stack.Screen 
+                name="HomeFeed" 
+                component={HomeFeedScreen}
+                options={{ title: 'Home' }}
+              />
+              <Stack.Screen 
+                name="Profile" 
+                component={ProfileScreen}
+              />
+              <Stack.Screen 
+                name="PinDetail" 
+                component={PinDetailScreen}
+                options={{ title: 'Pin' }}
+              />
+              <Stack.Screen 
+                name="BoardDetail" 
+                component={BoardDetailScreen}
+                options={{ title: 'Board' }}
+              />
+              <Stack.Screen 
+                name="CreatePin" 
+                component={CreatePinScreen}
+                options={{
+                  presentation: 'transparentModal',
+                  animation: 'slide_from_bottom',
+                  headerShown: false,
+                  contentStyle: { backgroundColor: 'transparent' }
+                }}
+              />
+              <Stack.Screen 
+                name="CreateBoard" 
+                component={CreateBoardScreen}
+                options={{ title: 'Create Board' }}
+              />
+              <Stack.Screen 
+                name="Search" 
+                component={SearchScreen}
+              />
+              <Stack.Screen 
+                name="EditProfile" 
+                component={EditProfileScreen}
+                options={{ title: 'Edit Profile' }}
+              />
+              <Stack.Screen 
+                name="UserBoards" 
+                component={UserBoardsScreen}
+                options={{ title: 'Boards' }}
+              />
+              <Stack.Screen 
+                name="UserPins" 
+                component={UserPinsScreen}
+                options={{ title: 'Pins' }}
+              />
+              <Stack.Screen 
+                name="Trending" 
+                component={TrendingScreen}
+                options={{ title: 'Trending' }}
+              />
+              <Stack.Screen 
+                name="EditBoard" 
+                component={EditBoardScreen}
+                options={{ title: 'Edit Board' }}
+              />
+              <Stack.Screen 
+                name="SelectBoard" 
+                component={SelectBoardScreen}
+                options={{ 
+                  title: 'Select Board',
+                  headerShown: true
+                }}
+              />
+              <Stack.Screen 
+                name="Settings" 
+                component={SettingsScreen}
+                options={{ 
+                  title: 'Settings',
+                  headerShown: false
+                }}
+              />
+            </Stack.Navigator>
+          </NavigationContainer>
+          <StatusBar style="light" />
+        </PaperProvider>
+      </SettingsProvider>
+    </AuthProvider>
   );
 } 
