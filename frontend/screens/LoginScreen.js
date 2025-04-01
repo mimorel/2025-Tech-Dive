@@ -8,47 +8,26 @@ import {
   Keyboard,
 } from 'react-native';
 import { TextInput, Button, Text, Surface } from 'react-native-paper';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { authAPI } from '../services/api';
+import { useAuth } from '../context/AuthContext';
 
 const LoginScreen = ({ navigation }) => {
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const { login } = useAuth();
 
   const handleSubmit = async () => {
     setError('');
     setLoading(true);
 
     try {
-      // Temporary frontend-only validation
-      if (formData.email === 'test@test.com' && formData.password === 'test123') {
-        // Store a dummy token
-        await AsyncStorage.setItem('token', 'dummy-token-for-testing');
-        navigation.replace('HomeFeed');
-        return;
-      }
-
-      // Show error for any other credentials during testing
-      throw new Error('Please use test@test.com / test123 for testing');
-
-      // Original backend call - commented out for now
-      /*
-      const response = await fetch('http://localhost:3000/api/auth/login', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData),
-      });
-
-      const data = await response.json();
-      if (!response.ok) {
-        throw new Error(data.message || 'Login failed');
-      }
-
-      await AsyncStorage.setItem('token', data.token);
-      navigation.replace('HomeFeed');
-      */
+      // Clean up the password by removing any prefixes
+      const cleanPassword = formData.password.replace(/^Password:\s*/i, '');
+      await login({ ...formData, password: cleanPassword });
+      navigation.replace('Home');
     } catch (err) {
-      setError(err.message);
+      setError(err.message || 'Login failed. Please check your credentials.');
     } finally {
       setLoading(false);
     }
@@ -61,13 +40,15 @@ const LoginScreen = ({ navigation }) => {
     >
       <Surface style={styles.surface}>
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
-          <View>
+          <View style={styles.content}>
+            <Text style={styles.logo}>Pinterest</Text>
             <Text variant="headlineMedium" style={styles.title}>Welcome Back</Text>
             {error ? <Text style={styles.error}>{error}</Text> : null}
             <Text style={styles.testCredentials}>
               Test credentials:{'\n'}
-              Email: test@test.com{'\n'}
-              Password: test123
+              Email: john@example.com{'\n'}
+              Password: password123{'\n\n'}
+              Note: Enter the password without any prefix
             </Text>
           </View>
         </TouchableWithoutFeedback>
@@ -80,6 +61,7 @@ const LoginScreen = ({ navigation }) => {
           keyboardType="email-address"
           autoCapitalize="none"
           style={styles.input}
+          theme={{ colors: { primary: '#E60023' } }}
         />
 
         <TextInput
@@ -89,6 +71,7 @@ const LoginScreen = ({ navigation }) => {
           onChangeText={(text) => setFormData({ ...formData, password: text })}
           secureTextEntry
           style={styles.input}
+          theme={{ colors: { primary: '#E60023' } }}
         />
 
         <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -98,6 +81,7 @@ const LoginScreen = ({ navigation }) => {
               onPress={handleSubmit}
               loading={loading}
               style={styles.button}
+              buttonColor="#E60023"
             >
               Login
             </Button>
@@ -106,6 +90,7 @@ const LoginScreen = ({ navigation }) => {
               mode="text"
               onPress={() => navigation.navigate('Register')}
               style={styles.linkButton}
+              textColor="#E60023"
             >
               Don't have an account? Sign up
             </Button>
@@ -123,37 +108,55 @@ const styles = StyleSheet.create({
   },
   surface: {
     flex: 1,
-    padding: 20,
+    margin: 16,
+    padding: 24,
+    borderRadius: 16,
+    elevation: 4,
+    backgroundColor: '#ffffff',
+  },
+  content: {
     alignItems: 'center',
-    justifyContent: 'center',
+    marginBottom: 24,
+  },
+  logo: {
+    fontSize: 48,
+    fontWeight: 'bold',
+    color: '#E60023',
+    marginBottom: 24,
   },
   title: {
+    textAlign: 'center',
     marginBottom: 24,
+    color: '#111111',
     fontWeight: 'bold',
   },
-  testCredentials: {
-    marginBottom: 16,
-    color: '#666',
-    textAlign: 'center',
-  },
   input: {
-    width: '100%',
     marginBottom: 16,
+    backgroundColor: '#ffffff',
   },
   buttonContainer: {
-    width: '100%',
+    marginTop: 8,
   },
   button: {
-    width: '100%',
-    marginTop: 8,
-    padding: 4,
+    marginBottom: 8,
+    borderRadius: 24,
+    paddingVertical: 8,
   },
   linkButton: {
-    marginTop: 16,
+    marginTop: 8,
   },
   error: {
-    color: '#B00020',
+    color: '#E60023',
+    textAlign: 'center',
     marginBottom: 16,
+    fontWeight: '500',
+  },
+  testCredentials: {
+    textAlign: 'center',
+    marginBottom: 24,
+    color: '#666',
+    fontSize: 14,
+    lineHeight: 20,
   },
 });
 
