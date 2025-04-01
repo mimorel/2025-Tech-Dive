@@ -1,8 +1,8 @@
 # Pinterest Clone
 
-A full-stack Pinterest clone built with the MERN stack (MongoDB, Express.js, React.js, Node.js). This project allows users to create, share, and discover pins, organize them into boards, and interact with other users through comments and following relationships.
+A full-stack Pinterest clone built with the MERN stack (MongoDB, Express.js, React.js, Node.js). 
 
-## Features
+## Features (existing, to improve, and implement)
 
 - User authentication and authorization
 - Create, edit, and delete pins
@@ -51,7 +51,7 @@ pinterest-clone/
 ### 1. Clone the Repository
 
 ```bash
-git clone https://github.com/yourusername/pinterest-clone.git
+git clone https://github.com/yourusername/pinterest-clone.git (make sure it is private)
 cd pinterest-clone
 ```
 
@@ -175,13 +175,6 @@ The database comes pre-seeded with test accounts. You can use any of these accou
 14. ava_patel@example.com / password123
 15. noah_anderson@example.com / password123
 
-## Contributing
-
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request
 
 ## License
 
