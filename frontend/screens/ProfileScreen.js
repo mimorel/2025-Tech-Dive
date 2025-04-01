@@ -76,7 +76,18 @@ const ProfileScreen = ({ navigation }) => {
         console.log('No stored user data, fetching from API...');
         try {
           userData = await authAPI.getCurrentUser();
-          console.log('Successfully fetched current user:', userData);
+          console.log('=== RAW USER DATA FROM API ===');
+          console.log(JSON.stringify(userData, null, 2));
+          console.log('=== USER DATA KEYS ===');
+          console.log(Object.keys(userData));
+          console.log('=== FOLLOWERS DATA ===');
+          console.log('Followers array:', userData.followers);
+          console.log('Followers type:', typeof userData.followers);
+          console.log('Is followers array?', Array.isArray(userData.followers));
+          console.log('=== FOLLOWING DATA ===');
+          console.log('Following array:', userData.following);
+          console.log('Following type:', typeof userData.following);
+          console.log('Is following array?', Array.isArray(userData.following));
         } catch (apiError) {
           console.error('Error fetching current user:', apiError);
           throw new Error('Failed to fetch user data from API');
@@ -97,11 +108,16 @@ const ProfileScreen = ({ navigation }) => {
         following: userData.following || []
       };
 
-      console.log('Setting complete user data:', completeUserData);
+      console.log('=== COMPLETE USER DATA ===');
+      console.log(JSON.stringify(completeUserData, null, 2));
+      console.log('=== FOLLOWERS AND FOLLOWING IN COMPLETE DATA ===');
+      console.log('Followers:', completeUserData.followers);
+      console.log('Following:', completeUserData.following);
+      
       setUser(completeUserData);
       
       // Fetch user's pins
-      console.log('Fetching user pins...');
+      console.log('=== FETCHING USER PINS ===');
       const pinsResponse = await pinsAPI.getAllPins();
       console.log('Pins response:', JSON.stringify(pinsResponse, null, 2));
       const userPins = pinsResponse.pins.filter(pin => {
@@ -114,22 +130,38 @@ const ProfileScreen = ({ navigation }) => {
       setUserPins(userPins);
       
       // Fetch user's boards
-      console.log('Fetching user boards...');
+      console.log('=== FETCHING USER BOARDS ===');
       const boardsResponse = await boardsAPI.getAllBoards();
-      console.log('Boards response:', boardsResponse);
+      console.log('Boards response:', JSON.stringify(boardsResponse, null, 2));
       const userBoards = boardsResponse.boards.filter(board => board.user._id === userData.id);
-      console.log('Filtered user boards:', userBoards);
+      console.log('Filtered user boards:', JSON.stringify(userBoards, null, 2));
       setUserBoards(userBoards);
       
-      // Update stats
-      setStats({
+      // Update stats with proper follower/following counts
+      console.log('=== CALCULATING STATS ===');
+      console.log('User followers:', JSON.stringify(completeUserData.followers, null, 2));
+      console.log('User following:', JSON.stringify(completeUserData.following, null, 2));
+      
+      // Get follower and following counts from the user data
+      const followersCount = Array.isArray(completeUserData.followers) ? completeUserData.followers.length : 0;
+      const followingCount = Array.isArray(completeUserData.following) ? completeUserData.following.length : 0;
+      
+      console.log('Followers count:', followersCount);
+      console.log('Following count:', followingCount);
+      
+      const finalStats = {
         pins: userPins.length,
         boards: userBoards.length,
-        followers: completeUserData.followers.length,
-        following: completeUserData.following.length
-      });
+        followers: followersCount,
+        following: followingCount
+      };
+      
+      console.log('=== FINAL STATS ===');
+      console.log(JSON.stringify(finalStats, null, 2));
+      
+      setStats(finalStats);
 
-      console.log('Profile data successfully loaded');
+      console.log('=== PROFILE DATA LOADED ===');
     } catch (error) {
       console.error('Error in fetchUserProfile:', error);
       setError(error.message);
@@ -291,7 +323,10 @@ const ProfileScreen = ({ navigation }) => {
                 Boards
               </Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.statItem}>
+            <TouchableOpacity 
+              style={styles.statItem}
+              onPress={() => navigation.navigate('Followers', { userId: user.id })}
+            >
               <Text variant="titleLarge" style={styles.statNumber}>
                 {stats.followers}
               </Text>
@@ -299,7 +334,10 @@ const ProfileScreen = ({ navigation }) => {
                 Followers
               </Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.statItem}>
+            <TouchableOpacity 
+              style={styles.statItem}
+              onPress={() => navigation.navigate('Following', { userId: user.id })}
+            >
               <Text variant="titleLarge" style={styles.statNumber}>
                 {stats.following}
               </Text>

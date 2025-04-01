@@ -70,7 +70,9 @@ router.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
     // Check if user exists
-    let user = await User.findOne({ email });
+    let user = await User.findOne({ email })
+      .populate('followers', 'name username avatar')
+      .populate('following', 'name username avatar');
     console.log('User found:', user ? 'Yes' : 'No');
     
     if (!user) {
@@ -104,7 +106,7 @@ router.post('/login', async (req, res) => {
           throw err;
         }
         console.log('Login successful for user:', email);
-        // Send both token and user data
+        // Send both token and complete user data
         res.json({ 
           token,
           user: {
@@ -113,7 +115,15 @@ router.post('/login', async (req, res) => {
             email: user.email,
             name: user.name,
             title: user.title,
-            bio: user.bio
+            bio: user.bio,
+            avatar: user.avatar,
+            location: user.location,
+            website: user.website,
+            settings: user.settings,
+            followers: user.followers,
+            following: user.following,
+            createdAt: user.createdAt,
+            updatedAt: user.updatedAt
           }
         });
       }
@@ -129,10 +139,22 @@ router.post('/login', async (req, res) => {
 // @access  Private
 router.get('/me', auth, async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).select('-password');
+    console.log('Fetching user data for ID:', req.user.id);
+    const user = await User.findById(req.user.id)
+      .select('-password')
+      .populate('followers', 'name username avatar')
+      .populate('following', 'name username avatar');
+    
+    console.log('User data before sending:', JSON.stringify(user, null, 2));
+    
+    if (!user) {
+      console.log('No user found for ID:', req.user.id);
+      return res.status(404).json({ message: 'User not found' });
+    }
+
     res.json(user);
   } catch (err) {
-    console.error(err.message);
+    console.error('Error in /auth/me:', err.message);
     res.status(500).send('Server Error');
   }
 });
