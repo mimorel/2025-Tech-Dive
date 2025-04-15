@@ -934,6 +934,40 @@ const comments = [
   },
 ];
 
+const getRandomDateWithinDays = (days) => {
+  const now = new Date();
+  return new Date(now.getTime() - Math.floor(Math.random() * days * 24 * 60 * 60 * 1000));
+};
+
+const getRandomDeviceType = () => {
+  const types = ['mobile', 'desktop', 'tablet'];
+  return types[Math.floor(Math.random() * types.length)];
+};
+
+const getRandomDeviceTypesCount = (total) => {
+  // Distribute total randomly among device types
+  let remaining = total;
+  const mobile = Math.floor(Math.random() * (remaining + 1));
+  remaining -= mobile;
+  const desktop = Math.floor(Math.random() * (remaining + 1));
+  remaining -= desktop;
+  const tablet = remaining;
+  return { mobile, desktop, tablet };
+};
+
+const getRandomLocations = (total) => {
+  const locations = ['US', 'UK', 'FR', 'DE', 'IN', 'CN', 'AU', 'ES', 'DK', 'KR'];
+  const locMap = {};
+  let remaining = total;
+  while (remaining > 0) {
+    const loc = locations[Math.floor(Math.random() * locations.length)];
+    const count = Math.max(1, Math.floor(Math.random() * remaining));
+    locMap[loc] = (locMap[loc] || 0) + count;
+    remaining -= count;
+  }
+  return locMap;
+};
+
 async function seedDatabase() {
   try {
     await mongoose.connect(MONGODB_URI);
@@ -950,7 +984,25 @@ async function seedDatabase() {
     const createdUsers = await Promise.all(
       users.map(async (user) => {
         const hashedPassword = await bcrypt.hash(user.password, 10);
-        return User.create({ ...user, password: hashedPassword });
+        // Analytics fields
+        const loginCount = Math.floor(Math.random() * 50) + 1;
+        const deviceType = getRandomDeviceType();
+        const deviceTypes = getRandomDeviceTypesCount(loginCount);
+        const locations = getRandomLocations(loginCount);
+        const lastLogin = getRandomDateWithinDays(30);
+        const sessionDuration = Math.floor(Math.random() * 116) + 5; // 5-120 min
+        const activityScore = Math.floor(Math.random() * 991) + 10; // 10-1000
+        return User.create({
+          ...user,
+          password: hashedPassword,
+          lastLogin,
+          loginCount,
+          deviceType,
+          deviceTypes,
+          locations,
+          sessionDuration,
+          activityScore
+        });
       })
     );
     console.log('Created users');
@@ -989,10 +1041,24 @@ async function seedDatabase() {
       );
       const user = board ? await User.findById(board.user) : createdUsers[Math.floor(Math.random() * createdUsers.length)];
 
+      // Analytics fields for pins
+      const views = Math.floor(Math.random() * 991) + 10; // 10-1000
+      const saves = Math.floor(Math.random() * 200) + 1;
+      const clicks = Math.floor(Math.random() * 301);
+      const viewDuration = Math.floor(Math.random() * 4991) + 10; // 10-5000 sec
+      const deviceTypes = getRandomDeviceTypesCount(views);
+      const locations = getRandomLocations(views);
+
       const createdPin = await Pin.create({
         ...pin,
         user: user._id,
         board: board ? board._id : null,
+        views,
+        saves,
+        clicks,
+        viewDuration,
+        deviceTypes,
+        locations
       });
 
       // Add 1-4 random comments to each pin from different users
