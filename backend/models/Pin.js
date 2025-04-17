@@ -26,8 +26,7 @@ const pinSchema = new mongoose.Schema({
   }],
   board: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Board',
-    required: true
+    ref: 'Board'
   },
   user: {
     type: mongoose.Schema.Types.ObjectId,
