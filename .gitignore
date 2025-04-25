@@ -72,3 +72,5 @@ dist/
 .env.development.local
 .env.test.local
 .env.production.local 
+backend/package-lock.json
+backend/package.json

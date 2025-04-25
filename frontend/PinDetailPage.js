@@ -30,7 +30,15 @@ const PinDetailPage = () => {
                 setLoading(false);
             }
         };
-
+/*
+        useEffect(() => {
+            // You can put any function call here
+            if (liked) {
+                username
+                // maybe send analytics?
+            }
+        }, [liked]);
+*/
         const fetchComments = async () => {
             try {
                 const response = await fetch(`/api/pins/${id}/comments`);
@@ -53,6 +61,11 @@ const PinDetailPage = () => {
                 method: 'POST',
                 headers: { Authorization: `Bearer ${token}` },
             });
+            
+
+
+            setLiked(data.likes?.includes(localStorage.getItem('userId')));
+
             if (!response.ok) throw new Error('Failed to update like status');
             setLiked(!liked);
         } catch (err) {

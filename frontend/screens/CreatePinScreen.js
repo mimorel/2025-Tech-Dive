@@ -23,7 +23,7 @@ const CreatePinScreen = () => {
   const [formData, setFormData] = useState({
     title: '',
     description: '',
-    imageUrl: '',
+    imageUrl: '',//'/Users/mariaisabelmorel/Development/2025-Tech-Dive/frontend/screens/images/funnyCatPicture.jpg',
     boardId: initialBoardId || '',
   });
   const [boards, setBoards] = useState([]);
@@ -118,11 +118,17 @@ const CreatePinScreen = () => {
     </TouchableOpacity>
   );
 
+
+
   const handleSubmit = async () => {
     console.log('Submitting form data:', formData);
-    if (!formData.title || !formData.imageUrl || !formData.boardId) {
+    if (!formData.imageUrl) {
+      formData.imageUrl ='/Users/mariaisabelmorel/Development/2025-Tech-Dive/frontend/screens/images/funnyCatPicture.jpg'
+    }
+
+
+    if (!formData.title || !formData.boardId) {
       console.log('Missing fields:', {
-        title: !formData.title,
         imageUrl: !formData.imageUrl,
         boardId: !formData.boardId
       });

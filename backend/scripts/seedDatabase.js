@@ -5,7 +5,7 @@ const Pin = require('../models/Pin');
 const Board = require('../models/Board');
 const Comment = require('../models/Comment');
 
-const MONGODB_URI = 'mongodb://localhost:27017/pinterest-clone';
+const MONGODB_URI = 'mongodb://127.0.0.1:27017/pinterest-clone';
 
 const users = [
   {
@@ -983,26 +983,8 @@ async function seedDatabase() {
     // Create users
     const createdUsers = await Promise.all(
       users.map(async (user) => {
-        const hashedPassword = await bcrypt.hash(user.password, 10);
-        // Analytics fields
-        const loginCount = Math.floor(Math.random() * 50) + 1;
-        const deviceType = getRandomDeviceType();
-        const deviceTypes = getRandomDeviceTypesCount(loginCount);
-        const locations = getRandomLocations(loginCount);
-        const lastLogin = getRandomDateWithinDays(30);
-        const sessionDuration = Math.floor(Math.random() * 116) + 5; // 5-120 min
-        const activityScore = Math.floor(Math.random() * 991) + 10; // 10-1000
-        return User.create({
-          ...user,
-          password: hashedPassword,
-          lastLogin,
-          loginCount,
-          deviceType,
-          deviceTypes,
-          locations,
-          sessionDuration,
-          activityScore
-        });
+        // const hashedPassword = await bcrypt.hash(user.password, 10);
+        return User.create({ ...user, password: user.password });
       })
     );
     console.log('Created users');
